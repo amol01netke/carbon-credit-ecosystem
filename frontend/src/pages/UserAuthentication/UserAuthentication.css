@@ -1,4 +1,25 @@
-.forms{
-    text-align: center;
-    
+.user-authentication{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+
+}
+
+.login-form{
+    display: flex;
+    flex-direction: column;
+}
+
+.login-form input,select{
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    width: 100%;
+    border-radius: 5px;
+    outline: none;
+    border: none;
+    background-color: #ccc;
+    font-size: 1em;
 }
