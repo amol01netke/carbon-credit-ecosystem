@@ -4,15 +4,23 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-
 }
 
-.login-form{
-    display: flex;
+.form-header img{
+    width: 100px;
+    height: 100px;
+}
+
+form{
+    display: none;
     flex-direction: column;
 }
 
-.login-form input,select{
+.form.is-active{
+    display: block;
+}
+
+.form input,select{
     margin-bottom: 10px;
     padding: 15px;
     border-radius: 5px;
@@ -22,4 +30,19 @@
     border: none;
     background-color: #ccc;
     font-size: 1em;
+}
+
+.form-submit{
+    width: fit-content;
+    border-radius: 10px 10px;
+    background-color: #228B22;
+}
+
+.form-switcher{
+    border: none;
+    background: none;
+}
+
+.form-switcher:hover{
+    cursor: pointer;
 }
