@@ -1,0 +1,19 @@
+.user-dashboard{
+    min-height: 100vh;
+    font-size: 2em;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.generator{
+    font-size: 2em;
+}
+
+.consumer{
+    font-size: 2em;
+}
+
+.validator{
+    font-size: 2em;
+}

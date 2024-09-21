@@ -4,10 +4,8 @@ import {
   Switch,
 } from "react-router-dom";
 import UserAuthentication from "./pages/UserAuthentication/UserAuthentication";
+import UserDashboard from "./pages/UserDashboard/UserDashboard";
 import React from "react";
-import GovtDashboard from "./pages/GovtDashboard/GovtDashboard";
-import FarmerDashboard from "./pages/FarmerDashboard/FarmerDashboard";
-import IndustryDashboard from "./pages/IndustryDashboard/IndustryDashboard";
 
 const App=()=>{
   let routes;
@@ -17,18 +15,13 @@ const App=()=>{
         exact
         render={()=><UserAuthentication/>}
       />
-      <Route path="/farmer-dashboard"
-        exact 
-        render={()=><FarmerDashboard/>}
-      />
-      <Route path="/industry-dashboard"
-        exact 
-        render={()=><IndustryDashboard/>}
-      />
-      <Route path="/govt-dashboard"
-        exact 
-        render={()=><GovtDashboard/>}
-      />
+
+      <Route 
+        path="/user-dashboard" 
+        exact render={(props)=>{
+          return <UserDashboard {...props} userType={props.location.state?.userType} />;
+        }}/>
+
     </Switch>
   );
 
