@@ -1,10 +1,36 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./UserAuthentication.css";
 import { useState } from "react";
 import cce_logo from "../../assets/cce_logo.jpg";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import getWeb3 from "../../handlers/Web3Handler";
 
 const UserAuthentication=()=>{
+    const [userWalletAddress,setUserWalletAddress]=useState("");
+
+    //first hook to run
+    useEffect(()=>{
+        const initializeWeb3=async()=>{
+            try{
+                const web3=await getWeb3();
+                console.log('Web 3 initialized!',web3);
+
+                const accounts=await web3.eth.getAccounts();
+
+                for(let i=0;i<accounts.length;i++){
+                    const walletAddress=accounts[i];
+                    setUserWalletAddress(walletAddress);
+                    console.log(`Account ${i}:${userWalletAddress}`);
+                }
+
+
+                initializeWeb3();
+            }catch(error){
+                console.error(`Falied to initialize Web 3!`,)
+            }
+        }
+    },[]);
+
     const [activeForm,setActiveForm]=useState("login");
     const [userType,setUserType]=useState("generator");
         
