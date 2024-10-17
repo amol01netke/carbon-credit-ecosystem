@@ -13,6 +13,7 @@ import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 
 const App=()=>{
   const [isLoggedIn, setIsLoggedIn]=useState(false);
+  const [userType, setUserType]=useState("generator");
 
   let routes;
   if(isLoggedIn)
@@ -23,9 +24,11 @@ const App=()=>{
           path="/user-dashboard" 
           exact 
           render={(props)=>{
-            return <UserDashboard {...props} userType={props.location.state?.userType} />;
+            return <UserDashboard {...props} userType={userType} />;
           }}
         />
+
+        <Redirect to="/user-dashboard"></Redirect>
       </Switch>); 
   }else
   {
@@ -35,7 +38,7 @@ const App=()=>{
           path="/user-selection" 
           exact 
           render={(props)=>{
-            return <UserSelection {...props} userType={props.location.state?.userType} />;
+            return <UserSelection {...props}/>;
           }}
         />
 
@@ -43,7 +46,7 @@ const App=()=>{
           path="/user-login" 
           exact 
           render={(props)=>{
-            return <UserLogin {...props} userType={props.location.state?.userType} />;
+            return <UserLogin {...props}  setIsLoggedIn={setIsLoggedIn} setUserType={setUserType}/>;
           }}
         />
 
@@ -51,7 +54,7 @@ const App=()=>{
           path="/user-registration" 
           exact 
           render={(props)=>{
-            return <UserRegistration {...props} userType={props.location.state?.userType} />;
+            return <UserRegistration {...props} setIsLoggedIn={setIsLoggedIn} setUserType={setUserType}/>;
           }}
         />
 
