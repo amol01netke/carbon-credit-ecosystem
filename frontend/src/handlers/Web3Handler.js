@@ -8,7 +8,7 @@ const getWeb3=async()=>{
             await window.ethereum.request({method:'eth_requestAccounts'});
             return web3;
         }catch(error){
-            console.error('User deined account access!');
+            console.error('User denied account access!');
             throw new Error('User denied account access!');
         }
     }else{

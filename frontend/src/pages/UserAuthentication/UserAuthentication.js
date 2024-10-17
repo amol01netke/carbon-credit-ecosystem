@@ -15,20 +15,18 @@ const UserAuthentication=()=>{
                 const web3=await getWeb3();
                 console.log('Web 3 initialized!',web3);
 
-                const accounts=await web3.eth.getAccounts();
+                const accounts = await web3.eth.getAccounts();
 
-                for(let i=0;i<accounts.length;i++){
-                    const walletAddress=accounts[i];
-                    setUserWalletAddress(walletAddress);
-                    console.log(`Account ${i}:${userWalletAddress}`);
+                if (accounts.length > 0) {
+                    setUserWalletAddress(accounts[0]);
+                    console.log(`Connected Wallet Address: ${accounts[0]}`);
                 }
-
-
-                initializeWeb3();
             }catch(error){
                 console.error(`Falied to initialize Web 3!`,)
             }
-        }
+        };
+
+        initializeWeb3();
     },[]);
 
     const [activeForm,setActiveForm]=useState("login");
@@ -52,7 +50,7 @@ const UserAuthentication=()=>{
             <div className="form-header">
                 <img src={cce_logo} alt="CCE LOGO"/>
             </div>
-            
+             
             <div className="forms">
                 {/*login form*/}
                 <form className={activeForm===`login`?`form is-active`:`form`} onSubmit={loginUser} >
