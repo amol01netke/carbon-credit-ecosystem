@@ -1,15 +1,40 @@
 import "./UserLogin.css";
+import React from "react";
 
 const GeneratorLogin=()=>{
-    return <h1>Generator Login</h1>;
+    return (
+    <React.Fragment>
+        <h1>GENERATOR LOGIN</h1>
+        <form className="login-form">        
+            <input className="form-ip" type="username" placeholder="Username"/>
+            <input className="form-ip" type="password" placeholder="Password"/>
+            <input className="form-submit" type="submit" value="Login"/>
+        </form>
+    </React.Fragment>);
 }
 
 const ConsumerLogin=()=>{
-    return <h1>Consumer Login</h1>;
+    return (
+    <React.Fragment>
+        <h1>CONSUMER LOGIN</h1>
+        <form className="login-form">        
+            <input className="form-ip" type="username" placeholder="Username"/>
+            <input className="form-ip" type="password" placeholder="Password"/>
+            <input className="form-submit" type="submit" value="Login"/>
+        </form>
+    </React.Fragment>);
 }
 
 const ValidatorLogin=()=>{
-    return <h1>Validator Login</h1>;
+    return (
+    <React.Fragment>
+        <h1>VALIDATOR LOGIN</h1>
+        <form className="login-form">        
+            <input className="form-ip" type="username" placeholder="Username"/>
+            <input className="form-ip" type="password" placeholder="Password"/>
+            <input className="form-submit" type="submit" value="Login"/>
+        </form>
+    </React.Fragment>);
 }
 
 const UserLogin=(props)=>{
@@ -30,7 +55,12 @@ const UserLogin=(props)=>{
             break;
     }
 
-    return <div className="login-page"><Component/></div>;
+    return (
+    <React.Fragment>
+        <div className="user-login">
+            <Component/>
+        </div>
+    </React.Fragment>);
 }
 
 export default UserLogin;

@@ -5,19 +5,20 @@ import React, { useState } from "react";
 const UserSelection=()=>{
     const [userType,setUserType]=useState("generator");
 
-    console.log(userType);
-    
+    //console.log(userType);
+
     return (
     <React.Fragment>
         <div className="user-selection">
             <h1>SELECT USER TYPE</h1>
-            <select onChange={(e)=>setUserType(e.target.value)}>
+            <br/>
+            <select className="select-user" onChange={(e)=>setUserType(e.target.value)}>
                 <option value="generator">Generator</option>
                 <option value="consumer">Consumer</option>
                 <option value="validator">Validator</option>
             </select>  
 
-            <div className="buttons">
+            <div>
                 <Link 
                     to={{
                     pathname:'/user-login',
