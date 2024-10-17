@@ -53,6 +53,9 @@ const UserLogin=(props)=>{
         case "validator":
             Component=ValidatorLogin;
             break;
+        
+        default:
+            break;
     }
 
     return (

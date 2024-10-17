@@ -84,6 +84,9 @@ const UserRegistration=(props)=>{
         case "validator":
             Component=ValidatorRegistration;
             break;
+        
+        default:
+            break;
     }
 
     return (

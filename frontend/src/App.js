@@ -55,7 +55,7 @@ const App=()=>{
           }}
         />
 
-        <Redirect to="/user-selection"/>
+        <Redirect to="/user-selection"></Redirect>
       </Switch>);
   }
 
