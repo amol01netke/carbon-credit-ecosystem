@@ -33,7 +33,7 @@ const ValidatorDashboard=()=>{
 
 const UserDashboard=(props)=>{
     const {userType}=props.location.state;
-    console.log(userType);
+    //console.log(userType);
 
     let Component;
     switch(userType){
