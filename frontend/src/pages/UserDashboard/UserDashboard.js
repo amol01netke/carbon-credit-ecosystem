@@ -4,56 +4,78 @@ import "./UserDashboard.css";
 import React, { useState } from "react";
 import { useEffect } from "react";
 import getWeb3 from "../../handlers/Web3Handler";
-import contractABI from "../../../../contracts/";
+import mintTokensABI from "../../abis/mintTokens.json";
+
 const contractAddress="";
 
 const GeneratorDashboard=()=>{
+    const [web3,setWeb3]=useState(null);
     const [userWalletAddress,setUserWalletAddress]=useState("");
     const [contract,setContract]=useState(null);
     const [mintAmount,setMintAmount]=useState(0);
     
-    const handleConnectWallet=async()=>{
-        try{
-            const web3=await getWeb3();
-            console.log('Web 3 initialized!',web3);
+    useEffect(()=>{
+        const initializeWeb3=async()=>{
+            try{
+                const web3Instance=await getWeb3();
+                setWeb3(web3Instance);
+                console.log(web3Instance);
+            }catch(error){
+                console.error(error.message);
+            }
+        }
 
+        initializeWeb3();
+    },[]);
+
+    const handleConnectWallet=async()=>{
+        if(!web3){
+            console.error('Web 3 is not initialized yet!');
+            return;
+        }
+
+        try{
             const accounts = await web3.eth.getAccounts();
 
             if (accounts.length > 0) {
                 setUserWalletAddress(accounts[0]);
                 console.log(`Connected Wallet Address: ${accounts[0]}`);
 
-                const contractInstance = new web3.eth.Contract(contractABI, contractAddress);
-                setContract(contractInstance);
+                if(contractAddress){
+                    const contractInstance = new web3.eth.Contract(mintTokensABI.abi, contractAddress);
+                    setContract(contractInstance);
+                }else{
+                    console.error('Contract addresss is not defined!');
+                }
+            }else {
+                console.error('Please ensure MetaMask is unlocked!');
             }
         }catch(error){
-            console.error(`Falied to initialize Web 3!`,)
+            console.error(error.message);
         }
     }
     
     const handleMintTokens=async()=>{
+        if (!web3 || !contract || !userWalletAddress) {
+            console.error('Web3, contract, or user wallet not available!');
+            return;
+        }
 
+        try{
+            const networkId=await web3.eth.net.getId();
+            const deployedNetwork=mintTokensABI.networks[networkId];
+            const contract=new web3.eth.Contract(mintTokensABI.abi, deployedNetwork.address);
+
+            await contract.methods.mint(mintAmount).send({
+                from: userWalletAddress,
+                value: web3.utils.toWei((mintAmount * 0.01).toString(), "ether") // Sending Ether based on token price
+            });
+            
+            console.log(`${mintAmount} tokens minted!`);
+        }catch(error){
+            console.error(error.message);
+        }
     }
-
-    // useEffect(()=>{
-    //     const initializeWeb3=async()=>{
-    //         try{
-    //             const web3=await getWeb3();
-    //             console.log('Web 3 initialized!',web3);
-
-    //             const accounts = await web3.eth.getAccounts();
-
-    //             if (accounts.length > 0) {
-    //                 setUserWalletAddress(accounts[0]);
-    //                 console.log(`Connected Wallet Address: ${accounts[0]}`);
-    //             }
-    //         }catch(error){
-    //             console.error(`Falied to initialize Web 3!`,)
-    //         }
-    //     };
-
-    //     initializeWeb3();
-    // },[]);
     
     return (
     <React.Fragment>
