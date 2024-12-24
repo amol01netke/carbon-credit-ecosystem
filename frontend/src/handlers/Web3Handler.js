@@ -8,10 +8,10 @@ const getWeb3=async()=>{
             await window.ethereum.request({method:'eth_requestAccounts'});
             return web3;
         }catch(error){
-            return 'User denied account access!';
+            console.error('User denied account access!');
         }
     }else{
-        return 'Please install MetaMask!';
+        console.error('Please install MetaMask!');
     }
 }
 
