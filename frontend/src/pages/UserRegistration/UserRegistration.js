@@ -1,116 +1,235 @@
 import "./UserRegistration.css";
-import React from "react";
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import React, { useState } from "react";
 
-const registerGenerator=()=>{
-    console.log("registering generator...");
+const registerGenerator = async (formData) => {
+    const { email, walletAddress, username, password } = formData;
+
+    try {
+        const response = await fetch("http://localhost:8000/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email,
+                walletAddress,
+                username,
+                password,
+            }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return true;
+        } else {
+            const error = await response.json();
+            console.log(error);
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+};
+
+const registerConsumer = (formData) => {
+    console.log("registering consumer...", formData);
     return true;
-}
+};
 
-const registerConsumer=()=>{
-    console.log("registering consumer...");
+const registerValidator = (formData) => {
+    console.log("registering validator...", formData);
     return true;
-}
+};
 
-const registerValidator=()=>{
-    console.log("registering validator...");
-    return true;
-}
-
-const GeneratorRegistration=()=>{
-    return (
+const GeneratorRegistration = ({ formData, handleChange }) => (
     <React.Fragment>
         <h1>GENERATOR REGISTRATION</h1>
-        <form className="registration-form" onSubmit={registerGenerator}>
-            <input className="form-ip" type="email" placeholder="Email"/>
-            <input className="form-ip" type="text" placeholder="Ethereum Wallet Address"/>      
-            <input className="form-ip" type="username" placeholder="Username"/>
-            <input className="form-ip" type="password" placeholder="Password"/>
-        </form>
-    </React.Fragment>);
-}
+        <input
+            className="form-ip"
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="text"
+            name="walletAddress"
+            placeholder="Ethereum Wallet Address"
+            value={formData.walletAddress}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+        />
+    </React.Fragment>
+);
 
-const ConsumerRegistration=()=>{
-    return (
+const ConsumerRegistration = ({ formData, handleChange }) => (
     <React.Fragment>
         <h1>CONSUMER REGISTRATION</h1>
-        <form className="registration-form" onSubmit={registerConsumer}>
-            <input className="form-ip" type="email" placeholder="Email"/>
-            <input className="form-ip" type="text" placeholder="Ethereum Wallet Address"/>      
-            <input className="form-ip" type="username" placeholder="Username"/>
-            <input className="form-ip" type="password" placeholder="Password"/>
-        </form>
-    </React.Fragment>);
-}
+        <input
+            className="form-ip"
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="text"
+            name="walletAddress"
+            placeholder="Ethereum Wallet Address"
+            value={formData.walletAddress}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+        />
+    </React.Fragment>
+);
 
-const ValidatorRegistration=()=>{
-    return (
+const ValidatorRegistration = ({ formData, handleChange }) => (
     <React.Fragment>
         <h1>VALIDATOR REGISTRATION</h1>
-        <form className="registration-form" onSubmit={registerValidator}>
-            <input className="form-ip" type="email" placeholder="Email"/>
-            <input className="form-ip" type="text" placeholder="Ethereum Wallet Address"/>      
-            <input className="form-ip" type="username" placeholder="Username"/>
-            <input className="form-ip" type="password" placeholder="Password"/>
-        </form>
-    </React.Fragment>);
-}
+        <input
+            className="form-ip"
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="text"
+            name="walletAddress"
+            placeholder="Ethereum Wallet Address"
+            value={formData.walletAddress}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+        />
+    </React.Fragment>
+);
 
-const UserRegistration=(props)=>{
-    const {userType}=props.location.state;
-    const {setIsLoggedIn, setUserType}=props;
-
-    //for App
+const UserRegistration = (props) => {
+    const { userType } = props.location.state;
+    const { setIsLoggedIn, setUserType } = props;
     setUserType(userType);
 
+    const [formData, setFormData] = useState({
+        email: "",
+        walletAddress: "",
+        username: "",
+        password: "",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        let isRegistered = false;
+        switch (userType) {
+            case "generator":
+                isRegistered = await registerGenerator(formData);
+                break;
+            case "consumer":
+                isRegistered = registerConsumer(formData);
+                break;
+            case "validator":
+                isRegistered = registerValidator(formData);
+                break;
+            default:
+                break;
+        }
+
+        if (isRegistered) {
+            setIsLoggedIn(true);
+            props.history.push({
+                pathname: "/user-dashboard",
+                state: { userType },
+            });
+        } else {
+            alert("Registration Failed!");
+        }
+    };
+
     let Component;
-    let handleRegistration;
-    switch(userType){
+    switch (userType) {
         case "generator":
-            Component=GeneratorRegistration;
-            handleRegistration=registerGenerator;
+            Component = GeneratorRegistration;
             break;
-        
         case "consumer":
-            Component=ConsumerRegistration;
-            handleRegistration=registerConsumer;
+            Component = ConsumerRegistration;
             break;
-        
         case "validator":
-            Component=ValidatorRegistration;
-            handleRegistration=registerValidator;
+            Component = ValidatorRegistration;
             break;
-        
         default:
             break;
     }
 
-    const handleClick=()=>{
-        if(handleRegistration()){
-            setIsLoggedIn(true);
-            props.history.push({
-                pathname:'/user-dashboard',
-                state:{userType}
-            });
-        }else{
-            alert("Registration Failed!");
-        }
-    }
-
     return (
-    <React.Fragment>
-        <div className="user-registration">
-            <Component/>
-            <Link 
-                to={{
-                pathname:'/user-dashboard',
-                state:{userType}
-                }}
-            >
-                <button className="form-submit" onClick={handleClick}>Register</button>
-            </Link>
-        </div>
-    </React.Fragment>);
-}
+        <React.Fragment>
+            <div className="user-registration">
+                <form className="registration-form" onSubmit={handleSubmit}>
+                    <Component formData={formData} handleChange={handleChange} />
+                    <button type="submit" className="form-submit">
+                        Register
+                    </button>
+                </form>
+            </div>
+        </React.Fragment>
+    );
+};
 
 export default UserRegistration;

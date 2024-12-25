@@ -5,7 +5,7 @@
     import getWeb3 from "../../handlers/Web3Handler";
     import mintTokensABI from "../../abis/MintTokens.json";
 
-    const contractAddress="0x46c4DeaD865411f9c6b6b0abe1D34810906097D1";
+    const contractAddress="0x7e3Df9928D4eDE1AC57c983260b54797064235Cd";
 
     const GeneratorDashboard=()=>{
         const [web3,setWeb3]=useState(null);

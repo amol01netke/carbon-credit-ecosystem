@@ -22,8 +22,8 @@ const GeneratorLogin=()=>{
     <React.Fragment>
         <h1>GENERATOR LOGIN</h1>
         <form className="login-form">        
-            <input className="form-ip" type="username" placeholder="Username"/>
-            <input className="form-ip" type="password" placeholder="Password"/>
+            <input className="form-ip" name="username" type="username" placeholder="Username"/>
+            <input className="form-ip" name="password" type="password" placeholder="Password"/>
         </form>
     </React.Fragment>);
 }

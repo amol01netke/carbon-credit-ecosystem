@@ -1,0 +1,8 @@
+{
+    "env": {
+      "DB_USER": "saniya75",
+      "DB_PASSWORD": "saniya1306",
+      "DB_NAME": "off-chain-db"
+    }
+  }
+  
