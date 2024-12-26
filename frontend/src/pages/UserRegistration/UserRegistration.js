@@ -33,14 +33,68 @@ const registerGenerator = async (formData) => {
     }
 };
 
-const registerConsumer = (formData) => {
-    console.log("registering consumer...", formData);
-    return true;
+const registerConsumer = async (formData) => {
+    const { email, walletAddress, username, password } = formData;
+
+    try {
+        const response = await fetch("http://localhost:8000/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email,
+                walletAddress,
+                username,
+                password,
+            }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return true;
+        } else {
+            const error = await response.json();
+            console.log(error);
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
 };
 
-const registerValidator = (formData) => {
-    console.log("registering validator...", formData);
-    return true;
+const registerValidator = async (formData) => {
+    const { email, walletAddress, username, password } = formData;
+
+    try {
+        const response = await fetch("http://localhost:8000/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email,
+                walletAddress,
+                username,
+                password,
+            }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return true;
+        } else {
+            const error = await response.json();
+            console.log(error);
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
 };
 
 const GeneratorRegistration = ({ formData, handleChange }) => (
@@ -224,7 +278,7 @@ const UserRegistration = (props) => {
                 <form className="registration-form" onSubmit={handleSubmit}>
                     <Component formData={formData} handleChange={handleChange} />
                     <button type="submit" className="form-submit">
-                        Register
+                        Registecdr
                     </button>
                 </form>
             </div>

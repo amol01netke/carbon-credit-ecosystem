@@ -1,110 +1,225 @@
-import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import React, { useState } from "react";
+//import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import "./UserLogin.css";
-import React from "react";
 
-const loginGenerator=()=>{
-    console.log("Logging in as generator...");
-    return true;
-}
+const loginGenerator = async (formData) => {
+    const { username, password } = formData;
 
-const loginConsumer=()=>{
-    console.log("Logging in as consumer...");
-    return true;
-}
+    try {
+        const response = await fetch("http://localhost:8000/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        });
 
-const loginValidator=()=>{
-    console.log("Logging in as validator...");
-    return true;
-}
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return true;
+        } else {
+            const error = await response.json();
+            console.error(error);
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+};
 
-const GeneratorLogin=()=>{
-    return (
+const loginConsumer = async (formData) => {
+    const { username, password } = formData;
+
+    try {
+        const response = await fetch("http://localhost:8000/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return true;
+        } else {
+            const error = await response.json();
+            console.error(error);
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+};
+
+const loginValidator = async (formData) => {
+    const { username, password } = formData;
+
+    try {
+        const response = await fetch("http://localhost:8000/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            return true;
+        } else {
+            const error = await response.json();
+            console.error(error);
+            return false;
+        }
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+};
+
+const GeneratorLogin = ({ formData, handleChange }) => (
     <React.Fragment>
         <h1>GENERATOR LOGIN</h1>
-        <form className="login-form">        
-            <input className="form-ip" name="username" type="username" placeholder="Username"/>
-            <input className="form-ip" name="password" type="password" placeholder="Password"/>
-        </form>
-    </React.Fragment>);
-}
+        <input
+            className="form-ip"
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+        />
+    </React.Fragment>
+);
 
-const ConsumerLogin=()=>{
-    return (
+const ConsumerLogin = ({ formData, handleChange }) => (
     <React.Fragment>
         <h1>CONSUMER LOGIN</h1>
-        <form className="login-form">        
-            <input className="form-ip" type="username" placeholder="Username"/>
-            <input className="form-ip" type="password" placeholder="Password"/>
-        </form>
-    </React.Fragment>);
-}
+        <input
+            className="form-ip"
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+        />
+    </React.Fragment>
+);
 
-const ValidatorLogin=()=>{
-    return (
+const ValidatorLogin = ({ formData, handleChange }) => (
     <React.Fragment>
         <h1>VALIDATOR LOGIN</h1>
-        <form className="login-form">        
-            <input className="form-ip" type="username" placeholder="Username"/>
-            <input className="form-ip" type="password" placeholder="Password"/>
-        </form>
-    </React.Fragment>);
-}
+        <input
+            className="form-ip"
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+        />
+        <input
+            className="form-ip"
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+        />
+    </React.Fragment>
+);
 
-const UserLogin=(props)=>{
-    const {userType}=props.location.state;
-    const {setIsLoggedIn,setUserType}=props;
-
-    //for App component
+const UserLogin = (props) => {
+    const { userType } = props.location.state;
+    const { setIsLoggedIn, setUserType } = props;
     setUserType(userType);
 
+    const [formData, setFormData] = useState({
+        username: "",
+        password: "",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        let isLoggedIn = false;
+        switch (userType) {
+            case "generator":
+                isLoggedIn = await loginGenerator(formData);
+                break;
+            case "consumer":
+                isLoggedIn = await loginConsumer(formData);
+                break;
+            case "validator":
+                isLoggedIn = await loginValidator(formData);
+                break;
+            default:
+                break;
+        }
+
+        if (isLoggedIn) {
+            setIsLoggedIn(true);
+            props.history.push({
+                pathname: "/user-dashboard",
+                state: { userType },
+            });
+        } else {
+            alert("Login Failed!");
+        }
+    };
+
     let Component;
-    let handleLogin;
-    switch(userType){
+    switch (userType) {
         case "generator":
-            Component=GeneratorLogin;
-            handleLogin=loginGenerator;
+            Component = GeneratorLogin;
             break;
-        
         case "consumer":
-            Component=ConsumerLogin;
-            handleLogin=loginConsumer;
+            Component = ConsumerLogin;
             break;
-        
         case "validator":
-            Component=ValidatorLogin;
-            handleLogin=loginValidator;
+            Component = ValidatorLogin;
             break;
-        
         default:
             break;
     }
 
-    const handleClick=()=>{
-        if(handleLogin()){
-            setIsLoggedIn(true);
-            props.history.push({
-                pathname:'/user-dashboard',
-                state:{userType}
-            });
-        }else{
-            alert("Login Failed!");
-        }
-    }
-
     return (
-    <React.Fragment>
-        <div className="user-login">
-            <Component/>
-            <Link 
-                to={{
-                pathname:'/user-dashboard',
-                state:{userType}
-                }}
-            >
-                <button className="form-submit" onClick={handleClick}>Login</button>
-            </Link>
-        </div>
-    </React.Fragment>);
-}
+        <React.Fragment>
+            <div className="user-login">
+                <form className="login-form" onSubmit={handleSubmit}>
+                    <Component formData={formData} handleChange={handleChange} />
+                    <button type="submit" className="form-submit">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </React.Fragment>
+    );
+};
 
 export default UserLogin;

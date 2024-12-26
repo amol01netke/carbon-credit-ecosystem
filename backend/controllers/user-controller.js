@@ -126,19 +126,19 @@ const { hash } = require("crypto");
 //post
 const loginUser = async (req, res) => {
 try {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
-  if (!isEmailValid(email)) {
-    return res.status(400).json({ error: "Please provide a valid email." });
-  }
+  // if (!isEmailValid(email)) {
+  //   return res.status(400).json({ error: "Please provide a valid email." });
+  // }
 
-  if (!isPasswordValid(password)) {
-    return res
-      .status(400)
-      .json({ error: "Password should be 6 to 8 characters." });
-  }
+  // if (!isPasswordValid(password)) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: "Password should be 6 to 8 characters." });
+  // }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ username });
 
   if (user) {
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -147,16 +147,15 @@ try {
       return res.status(401).json({ error: "Invalid password." });
     }
 
-    const token = createToken(user._id);
+    //const token = createToken(user._id);
 
     res.status(200).json({
       message: "User logged in successfully!",
-      token,
     });
   } else {
     return res.status(404).json({ error: "Email is not registered." });
   }
-} catch (error) {
+  } catch (error) {
   res.status(500).json({ error: "Internal Server Error." });
 }
 };
@@ -195,7 +194,6 @@ try {
 
     return res.status(201).json({
       message: "User registered successfully!",
-      token,
     });
   } else {
     return res.status(400).json({ error: "Email is already registered." });
