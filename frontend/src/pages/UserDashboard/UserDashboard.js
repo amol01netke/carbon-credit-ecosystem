@@ -84,10 +84,18 @@
     }
 
     const ConsumerDashboard=()=>{
+        const handleConnectWallet=()=>{
+            console.log('clicked!');
+        }
+
         return (
         <React.Fragment>
             <div>               
                 <h1>CONSUMER DASHBOARD</h1>
+                <button onClick={handleConnectWallet}>CONNECT WALLET</button><br/>
+                <input type="number"/><button>BUY</button>
+                <br/>
+                <input type="number"/><button>SELL</button>
             </div>
         </React.Fragment>);
     }
