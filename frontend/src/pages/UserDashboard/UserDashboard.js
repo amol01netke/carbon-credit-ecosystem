@@ -4,8 +4,10 @@
     import React, { useState } from "react";
     import getWeb3 from "../../handlers/Web3Handler";
     import mintTokensABI from "../../abis/MintTokens.json";
+    import buyCreditsABI from "../../abis/BuyCredits.json";
 
-    const contractAddress="0x7e3Df9928D4eDE1AC57c983260b54797064235Cd";
+    const contractAddress="0x21E3e438Db6fEd5f105E15ca33d688a08AD9f494";
+    // 0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34
 
     const GeneratorDashboard=()=>{
         const [web3,setWeb3]=useState(null);
@@ -84,16 +86,76 @@
     }
 
     const ConsumerDashboard=()=>{
-        const handleConnectWallet=()=>{
-            console.log('clicked!');
+        const [web3,setWeb3]=useState(null);
+        const [userWalletAddress,setUserWalletAddress]=useState("");
+        const [contract,setContract]=useState(null);
+        const [buyAmount,setBuyAmount]=useState(0);
+        
+        const contractAddress_buy="0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34";
+
+        const handleConnectWallet=async()=>{
+            try{
+                const web3Instance=await getWeb3();
+                
+                if(web3Instance){
+                    setWeb3(web3Instance);
+                    console.log('Web3 initialized!',web3Instance);
+                }else{
+                    console.error('Failed to initialize Web3!');
+                    return;
+                }
+               
+                const accounts = await web3Instance.eth.getAccounts();
+                if (accounts.length > 0){
+                    setUserWalletAddress(accounts[0]);
+                    console.log(`Connected Wallet Address: ${accounts[0]}`);
+                }else{
+                    console.error('No accounts found!');
+                    return;
+                }
+
+                const contractInstance = new web3Instance.eth.Contract(buyCreditsABI.abi, contractAddress_buy);
+                setContract(contractInstance);
+                console.log('Contract Initialized!', contractInstance);
+            }catch(error){
+                console.error("Error connecting wallet!");   
+            } 
         }
+        
+        const buyCredits=async()=>{
+            if (!web3 || !contract || !userWalletAddress) {
+                console.error('Web3, contract, or user wallet not available!');
+                return;
+            }
+
+            if (buyAmount <= 0) {
+                console.error("Please enter a valid mint amount greater than 0.");
+                return;
+            }
+
+            try{
+                const amountInWei = web3.utils.toWei(buyAmount.toString(), "ether");
+
+                await contract.methods.buyTokens(buyAmount).send({
+                    from: userWalletAddress, // User's wallet address
+                    value: amountInWei // The Ether sent to purchase the tokens
+                });
+        
+                console.log(`${buyAmount} tokens credited to your wallet!`);
+            }catch(error){
+                console.error(error.message);
+            }
+        }
+        
 
         return (
         <React.Fragment>
             <div>               
                 <h1>CONSUMER DASHBOARD</h1>
                 <button onClick={handleConnectWallet}>CONNECT WALLET</button><br/>
-                <input type="number"/><button>BUY</button>
+                <input type="number"
+                 value={buyAmount} 
+                 onChange={(e)=>setBuyAmount(e.target.value)}/><button onClick={buyCredits}>BUY</button>
                 <br/>
                 <input type="number"/><button>SELL</button>
             </div>
