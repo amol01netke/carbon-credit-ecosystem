@@ -24,7 +24,7 @@ const App=()=>{
           path="/user-dashboard" 
           exact 
           render={(props)=>{
-            return <UserDashboard {...props} userType={userType} />;
+            return <UserDashboard {...props} userType={userType} setIsLoggedIn={setIsLoggedIn}/>;
           }}
         />
 

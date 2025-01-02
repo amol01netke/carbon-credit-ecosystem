@@ -9,11 +9,12 @@
     const contractAddress="0x21E3e438Db6fEd5f105E15ca33d688a08AD9f494";
     // 0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34
 
-    const GeneratorDashboard=()=>{
+    const GeneratorDashboard=(props)=>{
         const [web3,setWeb3]=useState(null);
         const [userWalletAddress,setUserWalletAddress]=useState("");
         const [contract,setContract]=useState(null);
         const [mintAmount,setMintAmount]=useState(0);
+        // const {setIsLoggedIn}=props;
 
         const handleConnectWallet=async()=>{
             try{
@@ -67,6 +68,11 @@
             }
         }
         
+        const handleLogout=()=>{
+            props.setIsLoggedIn(false);
+            console.log(`Logged out!`);
+        }
+
         return (
         <React.Fragment>
             <div>
@@ -81,15 +87,18 @@
                     onChange={(e)=>setMintAmount(e.target.value)}
                 />
                 <button onClick={handleMintTokens}>Mint Tokens</button>
+                <br/>
+                <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
     }
 
-    const ConsumerDashboard=()=>{
+    const ConsumerDashboard=(props)=>{
         const [web3,setWeb3]=useState(null);
         const [userWalletAddress,setUserWalletAddress]=useState("");
         const [contract,setContract]=useState(null);
         const [buyAmount,setBuyAmount]=useState(0);
+        
         
         const contractAddress_buy="0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34";
 
@@ -147,6 +156,10 @@
             }
         }
         
+        const handleLogout=()=>{
+            props.setIsLoggedIn(false);
+            console.log("Logged out!");
+        }
 
         return (
         <React.Fragment>
@@ -158,6 +171,8 @@
                  onChange={(e)=>setBuyAmount(e.target.value)}/><button onClick={buyCredits}>BUY</button>
                 <br/>
                 <input type="number"/><button>SELL</button>
+                <br/>
+                <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
     }
@@ -174,6 +189,7 @@
 
     const UserDashboard=(props)=>{
         const {userType}=props.location.state;
+        const {setIsLoggedIn}=props;
         //console.log(userType);
 
         let Component;
@@ -198,7 +214,7 @@
             <React.Fragment>
                 <Header/>
                 <div className="user-dashboard">
-                    <Component/>
+                    <Component setIsLoggedIn={setIsLoggedIn}/>
                 </div>
                 <Footer/>
             </React.Fragment>

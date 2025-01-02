@@ -14,7 +14,9 @@ const userController = require("./controllers/user-controller");
 
 //post
 server.post("/api/login", userController.loginUser);
-server.post("/api/register", userController.registerUser);
+server.post("/api/register-generator", userController.registerUser);
+server.post("/api/register-consumer", userController.registerUser);
+server.post("/api/register-validator", userController.registerUser);
 
 //connect with database and start the server
 mongoose.connect(
