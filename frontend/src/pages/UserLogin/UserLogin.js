@@ -17,11 +17,66 @@ const UserLogin = (props) => {
         setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
 
-    const loginUser = async (formData) => {
+    const loginGenerator = async (formData) => {
         const { username, password } = formData;    
     
         try {
-            const response = await fetch("http://localhost:8000/api/login", {
+            const response = await fetch("http://localhost:8000/api/login-generator", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+                return true;
+            } else {
+                const error = await response.json();
+                console.error(error);
+                return false;
+            }
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    };
+
+    const loginConsumer = async (formData) => {
+        const { username, password } = formData;    
+    
+        try {
+            const response = await fetch("http://localhost:8000/api/login-consumer", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+                return true;
+            } else {
+                const error = await response.json();
+                console.error(error);
+                return false;
+            }
+        } catch (error) {
+            console.error(error);
+            return false;
+        }
+    };
+
+
+    const loginValidator = async (formData) => {
+        const { username, password } = formData;    
+    
+        try {
+            const response = await fetch("http://localhost:8000/api/login-validator", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -48,7 +103,12 @@ const UserLogin = (props) => {
         e.preventDefault();
 
         let isLoggedIn = false;
-        isLoggedIn = await loginUser(formData);
+        if(userType==="generator")
+            isLoggedIn = await loginGenerator(formData);
+        else if(userType==="consumer")
+            isLoggedIn=await loginConsumer(formData);
+        else
+            isLoggedIn=await loginValidator(formData);
         
         if (isLoggedIn) {
             setIsLoggedIn(true);

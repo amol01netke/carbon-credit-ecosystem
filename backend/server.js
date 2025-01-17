@@ -13,10 +13,12 @@ server.use(cors());
 const userController = require("./controllers/user-controller");
 
 //post
-server.post("/api/login", userController.loginUser);
-server.post("/api/register-generator", userController.registerUser);
-server.post("/api/register-consumer", userController.registerUser);
-server.post("/api/register-validator", userController.registerUser);
+server.post("/api/login-generator", userController.loginGenerator);
+server.post("/api/login-consumer", userController.loginConsumer);
+server.post("/api/login-validator", userController.loginValidator);
+server.post("/api/register-generator", userController.registerGenerator);
+server.post("/api/register-consumer", userController.registerConsumer);
+server.post("/api/register-validator", userController.registerValidator);
 
 //connect with database and start the server
 mongoose.connect(

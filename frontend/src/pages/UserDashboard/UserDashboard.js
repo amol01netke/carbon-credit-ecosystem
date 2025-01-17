@@ -6,8 +6,10 @@
     import mintTokensABI from "../../abis/MintTokens.json";
     import buyCreditsABI from "../../abis/BuyCredits.json";
 
-    const contractAddress="0x21E3e438Db6fEd5f105E15ca33d688a08AD9f494";
-    // 0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34
+    const contractAddress="0x943833Cdf89029F2e0072B51d35715f51199F171"
+    //0x22EF1eeEb48bb4f251ED2e45551a87eC6D961CA2"
+    //0x21E3e438Db6fEd5f105E15ca33d688a08AD9f494";
+    //0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34
 
     const GeneratorDashboard=(props)=>{
         const [web3,setWeb3]=useState(null);
@@ -88,6 +90,10 @@
                 />
                 <button onClick={handleMintTokens}>Mint Tokens</button>
                 <br/>
+                <input type="file" name="video" id="videoUpload" accept="video/*" required/>
+                <br/>
+                <button type="submit">Upload Video</button>
+                <br/>
                 <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
@@ -100,7 +106,7 @@
         const [buyAmount,setBuyAmount]=useState(0);
         
         
-        const contractAddress_buy="0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34";
+        const contractAddress_buy="0xDE0f9a2ED86e2bE0Be3e9A7B1fD91e51235426B2";
 
         const handleConnectWallet=async()=>{
             try{
@@ -177,11 +183,16 @@
         </React.Fragment>);
     }
 
-    const ValidatorDashboard=()=>{
+    const ValidatorDashboard=(props)=>{
+        const handleLogout=()=>{
+            props.setIsLoggedIn(false);
+            console.log("Logged out!");
+        }
         return (
         <React.Fragment>
             <div className="validator">               
                 <h1>VALIDATOR DASHBOARD</h1>
+                <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
     }
