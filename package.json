@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "ganache-cli": "^6.12.2"
+    "ganache-cli": "^6.12.2",
+    "ipfs-http-client": "^60.0.1"
   }
 }

@@ -5,18 +5,17 @@
     import getWeb3 from "../../handlers/Web3Handler";
     import mintTokensABI from "../../abis/MintTokens.json";
     import buyCreditsABI from "../../abis/BuyCredits.json";
+    import { uploadToIPFS } from "../../../src/handlers/IPFSHandler";
 
     const contractAddress="0x943833Cdf89029F2e0072B51d35715f51199F171"
-    //0x22EF1eeEb48bb4f251ED2e45551a87eC6D961CA2"
-    //0x21E3e438Db6fEd5f105E15ca33d688a08AD9f494";
-    //0x9677e9B8C09D410C800d7dc67EBE67D2Db253A34
-
+   
     const GeneratorDashboard=(props)=>{
         const [web3,setWeb3]=useState(null);
         const [userWalletAddress,setUserWalletAddress]=useState("");
         const [contract,setContract]=useState(null);
         const [mintAmount,setMintAmount]=useState(0);
-        // const {setIsLoggedIn}=props;
+        const [file, setFile] = useState(null); // File state
+        const [uploadedCID, setUploadedCID] = useState(""); // CID state
 
         const handleConnectWallet=async()=>{
             try{
@@ -75,6 +74,26 @@
             console.log(`Logged out!`);
         }
 
+        const handleFileChange=(e)=>{
+            const selectedFile = e.target.files[0];
+            setFile(selectedFile);
+        }
+
+        const handleFileUpload = async () => {
+            if (!file) {
+              console.error("No file selected!");
+              return;
+            }
+        
+            try {
+              const cid = await uploadToIPFS(file); // Upload to IPFS
+              setUploadedCID(cid);
+              console.log("Uploaded file CID:", cid);
+            } catch (error) {
+              console.error("Error uploading file to IPFS:", error);
+            }
+          };
+
         return (
         <React.Fragment>
             <div>
@@ -90,9 +109,9 @@
                 />
                 <button onClick={handleMintTokens}>Mint Tokens</button>
                 <br/>
-                <input type="file" name="video" id="videoUpload" accept="video/*" required/>
-                <br/>
-                <button type="submit">Upload Video</button>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image" onChange={handleFileChange}/>
+                <br/>   
+                <button type="submit" onClick={handleFileUpload}>Upload Photo</button>
                 <br/>
                 <button onClick={handleLogout}>Logout</button>
             </div>
