@@ -6,11 +6,16 @@ const mongoose = require("mongoose");
 const bodyParser=require("body-parser");
 const cors = require("cors");
 
-server.use(bodyParser.json());
-server.use(cors());
+//ipfs
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
 
 //controllers
 const userController = require("./controllers/user-controller");
+const ipfsHandler=require("./handlers/IPFSHandler");
+
+server.use(bodyParser.json());
+server.use(cors());
 
 //post
 server.post("/api/login-generator", userController.loginGenerator);
@@ -19,6 +24,7 @@ server.post("/api/login-validator", userController.loginValidator);
 server.post("/api/register-generator", userController.registerGenerator);
 server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
+server.post("/api/upload-image",upload.single("file"),ipfsHandler.uploadToIPFS);
 
 //connect with database and start the server
 mongoose.connect(
