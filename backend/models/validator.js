@@ -6,6 +6,6 @@ const validatorSchema=new mongoose.Schema({
     username:{type:String,required:true,unique:true},
     password:{type:String,required:true}
 });
-const Validator = mongoose.model('Validator', validatorSchema);
+const Validator = mongoose.model('Validator', validatorSchema, 'validators');
 
 module.exports = Validator;

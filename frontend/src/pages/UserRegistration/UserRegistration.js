@@ -2,7 +2,7 @@ import "./UserRegistration.css";
 import React, { useState } from "react";
 
 const registerGenerator = async (formData) => {
-    const { email, walletAddress, username, password } = formData;
+    const { firstName, lastName, email, username, password } = formData;
 
     try {
         const response = await fetch("http://localhost:8000/api/register-generator", {
@@ -11,8 +11,9 @@ const registerGenerator = async (formData) => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                firstName,
+                lastName,
                 email,
-                walletAddress,
                 username,
                 password,
             }),
@@ -100,8 +101,10 @@ const registerValidator = async (formData) => {
 const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
    
     const [formData, setFormData] = useState({
+        firstName:"",
+        lastName:"",
+        district:"",
         email: "",
-        walletAddress: "",
         username: "",
         password: "",
     });
@@ -131,21 +134,41 @@ const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
     return (   
         <React.Fragment>
             <form className="registration-form" onSubmit={handleSubmit}>
-                <h1>GENERATOR REGISTRATION</h1>
+                <h1>GENERATOR (FARMER) REGISTRATION</h1>
+                <div className="name-ip">
+                    <input
+                        className="form-ip"
+                        type="text"
+                        name="firstName"
+                        placeholder="First Name"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                    />
+                    <input
+                        className="form-ip"
+                        type="text"
+                        name="lastName"
+                        placeholder="Last Name"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                    />
+                </div>
+                
+                <input
+                    className="form-ip"
+                    type="text"
+                    name="district"
+                    placeholder="District"
+                    value={formData.district}
+                    onChange={handleChange}
+                />
+
                 <input
                     className="form-ip"
                     type="email"
                     name="email"
                     placeholder="Email"
                     value={formData.email}
-                    onChange={handleChange}
-                />
-                <input
-                    className="form-ip"
-                    type="text"
-                    name="walletAddress"
-                    placeholder="Ethereum Wallet Address"
-                    value={formData.walletAddress}
                     onChange={handleChange}
                 />
                 <input
@@ -170,7 +193,7 @@ const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
 };
 
 const ConsumerRegistration = (props,{setIsLoggedIn,userType}) => {
-   
+
     const [formData, setFormData] = useState({
         email: "",
         walletAddress: "",

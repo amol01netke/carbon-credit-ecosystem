@@ -1,7 +1,7 @@
-const { create } = require('ipfs-http-client');
+const ipfsClient = require('ipfs-http-client');
 const fs = require('fs/promises');
 
-const ipfs = create({ url: 'http://127.0.0.1:5001' });
+const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
 
 
 const uploadToIPFS = async (req, res) => {
@@ -19,10 +19,11 @@ const uploadToIPFS = async (req, res) => {
   try {
       const fileBuffer = await fs.readFile(file.path);
       const added = await ipfs.add(fileBuffer);
+      //await ipfs.pin.add(result.path);
       console.log("File uploaded to IPFS:", added);
 
       // Delete the file
-      await fs.unlink(file.path);
+      //await fs.unlink(file.path);
 
       res.json({ cid: added.path });
   } catch (error) {

@@ -92,10 +92,11 @@ const GeneratorDashboard=(props)=>{
         try {
             const response = await fetch("http://localhost:8000/api/upload-image", {
                 method: "POST",
+                body: formData,
                 headers: {
-                    "Content-Type": "application/json",
-                },
-                body: formData
+                    // Do not set Content-Type manually; FormData sets it correctly
+                    'Accept': 'application/json',
+                }
             });
 
             if (response.ok) {
@@ -114,23 +115,26 @@ const GeneratorDashboard=(props)=>{
     return (
         <React.Fragment>
             <div>
-                <h1>GENERATOR DASHBOARD</h1>
-                <br></br>
+                <h1>GENERATOR (FARMER) DASHBOARD</h1>
+                
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
+                <br/>
                 <h3>User Ethereum Wallet Address : {userWalletAddress}</h3>
-                <br></br>
+                <br/>
+
+                <input type="file" accept="image/*,video/*,.pdf" onChange={handleFileChange}/>
+                <br/>   
+                <button type="submit" onClick={handleFileUpload}>Upload Evidence</button>
+                <br/>
+                
                 <input type="number" 
                     placeholder="Enter amount to mint" 
                     value={mintAmount} 
                     onChange={(e)=>setMintAmount(e.target.value)}
                 />
                 <button onClick={handleMintTokens}>Mint Tokens</button>
-                <br/>
-                <input type="file" accept="image" onChange={handleFileChange}/>
-                <br/>   
-                <button type="submit" onClick={handleFileUpload}>Upload Photo</button>
-                <br/>
-                <h3>CID:{uploadedCID}</h3>
+                <br/><br/>
+                
                 <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
@@ -218,15 +222,49 @@ const ConsumerDashboard=(props)=>{
 }
 
 const ValidatorDashboard=(props)=>{
+    const [fetchedCID,setFetchedCID]=useState("");
+
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
         console.log("Logged out!");
     }
         
+    const fetchEvidence=(e)=>{
+        console.log("clicked!");
+    }
+
+    const handleEvidenceChange=(e)=>{
+        setFetchedCID(e.target.value);
+    }
+
+    const handleVerification=()=>{
+        console.log("clicked!");
+    }
+
     return (
         <React.Fragment>
-            <div className="validator">               
-                <h1>VALIDATOR DASHBOARD</h1>
+            <div>
+                <h1>VALIDATOR (GOVT. DEPT) DASHBOARD</h1>
+                
+                <input type="text" 
+                    placeholder="Enter CID"
+                    onChange={handleEvidenceChange}
+                    value={fetchedCID}
+                />
+                <br/>   
+                <button onClick={fetchEvidence}>Fetch Evidence</button>
+                <br/>
+                {fetchedCID && (
+                <div>
+                    <h3>CID:</h3>
+                    <p>{fetchedCID}</p>
+                </div>
+                )}
+                <button onClick={handleVerification}>Verify Evidence</button>
+                <br/>
+                <h3>Status: </h3>
+                <br/>
+                
                 <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
