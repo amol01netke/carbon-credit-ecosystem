@@ -25,6 +25,7 @@ server.post("/api/register-generator", userController.registerGenerator);
 server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
 server.post("/api/upload-image",upload.single("file"),ipfsHandler.uploadToIPFS);
+server.get("/api/get-evidence/:cid",ipfsHandler.getFromIPFS);
 
 //connect with database and start the server
 mongoose.connect(

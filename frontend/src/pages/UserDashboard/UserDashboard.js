@@ -122,7 +122,7 @@ const GeneratorDashboard=(props)=>{
                 <h3>User Ethereum Wallet Address : {userWalletAddress}</h3>
                 <br/>
 
-                <input type="file" accept="image/*,video/*,.pdf" onChange={handleFileChange}/>
+                <input type="file" accept=".json" onChange={handleFileChange}/>
                 <br/>   
                 <button type="submit" onClick={handleFileUpload}>Upload Evidence</button>
                 <br/>
@@ -229,8 +229,49 @@ const ValidatorDashboard=(props)=>{
         console.log("Logged out!");
     }
         
-    const fetchEvidence=(e)=>{
-        console.log("clicked!");
+    const fetchEvidence = async () => {
+        if (!fetchedCID) {
+            console.log("Please enter a CID");
+            return;
+        }
+    
+        try {
+            const response = await fetch(`http://localhost:8000/api/get-evidence/${fetchedCID}`, {
+                method: "GET",
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+    
+            if (!response.ok) {
+                console.error(`Error: ${response.status} ${response.statusText}`);
+                return;
+            }
+    
+            const jsonData = await response.json();
+    
+            // Create a Blob from JSON
+            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+    
+            // Create a URL for the Blob
+            const downloadUrl = URL.createObjectURL(blob);
+    
+            // Create an anchor element for downloading
+            const a = document.createElement("a");
+            a.href = downloadUrl;
+            a.download = `${fetchedCID}.json`; // Name file as CID.json
+            document.body.appendChild(a);
+            a.click(); // Trigger download
+            document.body.removeChild(a); // Cleanup
+    
+            // Free up memory
+            URL.revokeObjectURL(downloadUrl);
+    
+            console.log("JSON file downloaded successfully!");
+    
+        } catch (error) {
+            console.error("Error fetching evidence:", error.message);
+        }
     }
 
     const handleEvidenceChange=(e)=>{

@@ -11,10 +11,7 @@ const uploadToIPFS = async (req, res) => {
   }
 
   // Validate file type (e.g., image files)
-  const validMimeTypes = ["image/jpeg", "image/png", "image/gif"];
-  if (!validMimeTypes.includes(file.mimetype)) {
-      return res.status(400).json({ error: "Invalid file type" });
-  }
+  
 
   try {
       const fileBuffer = await fs.readFile(file.path);
@@ -32,4 +29,39 @@ const uploadToIPFS = async (req, res) => {
   }
 };
 
+const getFromIPFS = async (req, res) => {
+    const { cid } = req.params ;  // ✅ FIX: Use query params, not req.params
+
+    if (!cid) {
+        return res.status(400).json({ error: "CID is required" });
+    }
+
+    try {
+        const fileChunks = [];
+        for await (const chunk of ipfs.cat(cid)) {
+            fileChunks.push(chunk);
+        }
+
+        if (fileChunks.length === 0) {
+            return res.status(404).json({ error: "File not found on IPFS" });
+        }
+
+        const fileBuffer = Buffer.concat(fileChunks);
+        let jsonData;
+
+        try {
+            jsonData = JSON.parse(fileBuffer.toString());  // ✅ FIX: JSON Parsing Error Handling
+        } catch (parseError) {
+            return res.status(500).json({ error: "Invalid JSON format in IPFS file" });
+        }
+
+        res.setHeader("Content-Type", "application/json");
+        res.json(jsonData);
+    } catch (error) {
+        console.error("Error fetching from IPFS:", error);
+        res.status(500).json({ error: "Error fetching file from IPFS" });
+    }
+}
+
 exports.uploadToIPFS=uploadToIPFS;
+exports.getFromIPFS=getFromIPFS;

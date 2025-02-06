@@ -103,7 +103,6 @@ const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
     const [formData, setFormData] = useState({
         firstName:"",
         lastName:"",
-        district:"",
         email: "",
         username: "",
         password: "",
@@ -154,15 +153,6 @@ const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
                     />
                 </div>
                 
-                <input
-                    className="form-ip"
-                    type="text"
-                    name="district"
-                    placeholder="District"
-                    value={formData.district}
-                    onChange={handleChange}
-                />
-
                 <input
                     className="form-ip"
                     type="email"
