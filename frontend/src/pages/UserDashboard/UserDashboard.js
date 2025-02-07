@@ -6,7 +6,7 @@ import getWeb3 from "../../handlers/Web3Handler";
 import mintTokensABI from "../../abis/MintTokens.json";
 import buyCreditsABI from "../../abis/BuyCredits.json";
 
-const contractAddress_mint="0x943833Cdf89029F2e0072B51d35715f51199F171"
+const contractAddress_mint="0x83387Df4A92E93ECdf1105E27E7EfB2e9b6171b2"
 const contractAddress_buy="0xDE0f9a2ED86e2bE0Be3e9A7B1fD91e51235426B2";
 
 const GeneratorDashboard=(props)=>{
@@ -88,6 +88,7 @@ const GeneratorDashboard=(props)=>{
 
         const formData=new FormData();
         formData.append("file",filePath);
+        formData.append("userWalletAddress",userWalletAddress);
 
         try {
             const response = await fetch("http://localhost:8000/api/upload-image", {
@@ -223,6 +224,13 @@ const ConsumerDashboard=(props)=>{
 
 const ValidatorDashboard=(props)=>{
     const [fetchedCID,setFetchedCID]=useState("");
+    const [jsonInput, setJsonInput] = useState("");
+    const [genAddress,setGenAddress]=useState("");
+    const [creditAmount, setCreditAmount] = useState(0);
+    
+    const [web3,setWeb3]=useState(null);
+    const [validatorAddress,setValidatorAddress]=useState(null);
+    const [contract,setContract]=useState(null);
 
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
@@ -248,10 +256,13 @@ const ValidatorDashboard=(props)=>{
                 return;
             }
     
-            const jsonData = await response.json();
-    
+            const data = await response.json();
+            console.log(data.walletAddress);
+            setGenAddress(data.walletAddress);
+
+            const fileContent=data.fileContent;
             // Create a Blob from JSON
-            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: "application/json" });
+            const blob = new Blob([JSON.stringify(fileContent, null, 2)], { type: "application/json" });
     
             // Create a URL for the Blob
             const downloadUrl = URL.createObjectURL(blob);
@@ -278,16 +289,81 @@ const ValidatorDashboard=(props)=>{
         setFetchedCID(e.target.value);
     }
 
-    const handleVerification=()=>{
-        console.log("clicked!");
+    const handleConnectWallet=async()=>{
+        try{
+            const web3Instance=await getWeb3();
+                
+            if(web3Instance){
+                setWeb3(web3Instance);
+                console.log('Web3 initialized!',web3Instance);
+            }else{
+                console.error('Failed to initialize Web3!');
+                return;
+            }
+               
+            const accounts = await web3Instance.eth.getAccounts();
+            if (accounts.length > 0){
+                setValidatorAddress(accounts[0]);
+                console.log(`Connected Wallet Address: ${accounts[0]}`);
+            }else{
+                console.error('No accounts found!');
+                return;
+            }
+
+            const contractInstance = new web3Instance.eth.Contract(mintTokensABI.abi, contractAddress_mint);
+            setContract(contractInstance);
+            console.log('Contract Initialized!', contractInstance);
+        }catch(error){
+            console.error("Error connecting wallet!");   
+        } 
+    }
+       
+    const handleVerification=async()=>{
+       console.log("clicked!");
+
+        try {
+            
+            const parsedData = JSON.parse(jsonInput); // Parse JSON content
+
+            //credit calculation
+            if (!parsedData.soil_tests || parsedData.soil_tests.length < 2) {
+                alert("Invalid JSON format. At least two soil test records required.");
+                return;
+            }
+    
+            // Extract latest and previous carbon content
+            const latestCarbon = parseFloat(parsedData.soil_tests[0].carbon_content);
+            const prevCarbon = parseFloat(parsedData.soil_tests[1].carbon_content);
+    
+            // Calculate credits (100 per 1% increase)
+            const totalCredits = Math.max(0, Math.round((latestCarbon - prevCarbon) * 100));
+    
+            setCreditAmount(totalCredits); // Update state
+            console.log(`Allotting ${creditAmount} credits...`);
+            
+            try{
+                await contract.methods.mint(creditAmount).send({
+                    from: genAddress,
+                    value: web3.utils.toWei((creditAmount * 0.01).toString(), "ether")
+                });
+                        
+                console.log(`${creditAmount} tokens alloted!`);
+            }catch(error){
+                console.error(error.message);
+            }
+        }
+        catch (error) {
+            console.error("Error verifying evidence:", error);
+            alert("Verification failed. Invalid JSON format.");
+        }
     }
 
     return (
         <React.Fragment>
             <div>
                 <h1>VALIDATOR (GOVT. DEPT) DASHBOARD</h1>
-                
-                <input type="text" 
+                <button onClick={handleConnectWallet}>CONNECT</button>
+               <input type="text" 
                     placeholder="Enter CID"
                     onChange={handleEvidenceChange}
                     value={fetchedCID}
@@ -301,6 +377,13 @@ const ValidatorDashboard=(props)=>{
                     <p>{fetchedCID}</p>
                 </div>
                 )}
+                <textarea
+                    rows="10"
+                    placeholder="Paste JSON content here..."
+                    value={jsonInput}
+                    onChange={(e) => setJsonInput(e.target.value)}
+                ></textarea>
+                <br/>   
                 <button onClick={handleVerification}>Verify Evidence</button>
                 <br/>
                 <h3>Status: </h3>
