@@ -35,7 +35,7 @@ const registerGenerator = async (formData) => {
 };
 
 const registerConsumer = async (formData) => {
-    const { email, walletAddress, username, password } = formData;
+    const { firstName, lastName, email, username, password } = formData;
 
     try {
         const response = await fetch("http://localhost:8000/api/register-consumer", {
@@ -44,8 +44,9 @@ const registerConsumer = async (formData) => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                firstName,
+                lastName,
                 email,
-                walletAddress,
                 username,
                 password,
             }),
@@ -67,7 +68,7 @@ const registerConsumer = async (formData) => {
 };
 
 const registerValidator = async (formData) => {
-    const { email, walletAddress, username, password } = formData;
+    const { firstName, lastName, email, username, password } = formData;
 
     try {
         const response = await fetch("http://localhost:8000/api/register-validator", {
@@ -76,8 +77,9 @@ const registerValidator = async (formData) => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
+                firstName,
+                lastName,
                 email,
-                walletAddress,
                 username,
                 password,
             }),
@@ -99,7 +101,6 @@ const registerValidator = async (formData) => {
 };
 
 const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
-   
     const [formData, setFormData] = useState({
         firstName:"",
         lastName:"",
@@ -133,7 +134,7 @@ const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
     return (   
         <React.Fragment>
             <form className="registration-form" onSubmit={handleSubmit}>
-                <h1>GENERATOR (FARMER) REGISTRATION</h1>
+                <h1>{props.userType} REGISTRATION</h1>
                 <div className="name-ip">
                     <input
                         className="form-ip"
@@ -179,14 +180,15 @@ const GeneratorRegistration = (props,{setIsLoggedIn,userType}) => {
                 />
                 <button type="submit" className="form-submit"> Register </button>
             </form>
-        </React.Fragment>);
+        </React.Fragment>
+    );
 };
 
 const ConsumerRegistration = (props,{setIsLoggedIn,userType}) => {
-
     const [formData, setFormData] = useState({
+        firstName:"",
+        lastName:"",
         email: "",
-        walletAddress: "",
         username: "",
         password: "",
     });
@@ -216,21 +218,32 @@ const ConsumerRegistration = (props,{setIsLoggedIn,userType}) => {
     return (   
         <React.Fragment>
             <form className="registration-form" onSubmit={handleSubmit}>
-                <h1>CONSUMER REGISTRATION</h1>
+                <h1>{props.userType} REGISTRATION</h1>
+                <div className="name-ip">
+                    <input
+                        className="form-ip"
+                        type="text"
+                        name="firstName"
+                        placeholder="First Name"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                    />
+                    <input
+                        className="form-ip"
+                        type="text"
+                        name="lastName"
+                        placeholder="Last Name"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                    />
+                </div>
+                
                 <input
                     className="form-ip"
                     type="email"
                     name="email"
                     placeholder="Email"
                     value={formData.email}
-                    onChange={handleChange}
-                />
-                <input
-                    className="form-ip"
-                    type="text"
-                    name="walletAddress"
-                    placeholder="Ethereum Wallet Address"
-                    value={formData.walletAddress}
                     onChange={handleChange}
                 />
                 <input
@@ -251,14 +264,15 @@ const ConsumerRegistration = (props,{setIsLoggedIn,userType}) => {
                 />
                 <button type="submit" className="form-submit"> Register </button>
             </form>
-        </React.Fragment>);
+        </React.Fragment>
+    );
 };
 
 const ValidatorRegistration = (props,{setIsLoggedIn,userType}) => {
-   
     const [formData, setFormData] = useState({
+        firstName:"",
+        lastName:"",
         email: "",
-        walletAddress: "",
         username: "",
         password: "",
     });
@@ -288,21 +302,32 @@ const ValidatorRegistration = (props,{setIsLoggedIn,userType}) => {
     return (   
         <React.Fragment>
             <form className="registration-form" onSubmit={handleSubmit}>
-                <h1>VALIDATOR REGISTRATION</h1>
+                <h1>{props.userType} REGISTRATION</h1>
+                <div className="name-ip">
+                    <input
+                        className="form-ip"
+                        type="text"
+                        name="firstName"
+                        placeholder="First Name"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                    />
+                    <input
+                        className="form-ip"
+                        type="text"
+                        name="lastName"
+                        placeholder="Last Name"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                    />
+                </div>
+                
                 <input
                     className="form-ip"
                     type="email"
                     name="email"
                     placeholder="Email"
                     value={formData.email}
-                    onChange={handleChange}
-                />
-                <input
-                    className="form-ip"
-                    type="text"
-                    name="walletAddress"
-                    placeholder="Ethereum Wallet Address"
-                    value={formData.walletAddress}
                     onChange={handleChange}
                 />
                 <input
@@ -323,7 +348,8 @@ const ValidatorRegistration = (props,{setIsLoggedIn,userType}) => {
                 />
                 <button type="submit" className="form-submit"> Register </button>
             </form>
-        </React.Fragment>);
+        </React.Fragment>
+    );
 };
 
 const UserRegistration = (props) => {
@@ -348,11 +374,11 @@ const UserRegistration = (props) => {
     }
 
     return (
-        <React.Fragment>
-            <div className="user-registration">
-                <Component setIsLoggedIn={setIsLoggedIn} userType={userType}/>
-            </div>
-        </React.Fragment>
+    <React.Fragment>
+        <div className="user-registration">
+            <Component setIsLoggedIn={setIsLoggedIn} userType={userType}/>
+        </div>
+    </React.Fragment>
     );
 };
 

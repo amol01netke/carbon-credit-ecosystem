@@ -18,12 +18,18 @@ server.use(bodyParser.json());
 server.use(cors());
 
 //post
+
+//login
 server.post("/api/login-generator", userController.loginGenerator);
 server.post("/api/login-consumer", userController.loginConsumer);
 server.post("/api/login-validator", userController.loginValidator);
+
+//registration
 server.post("/api/register-generator", userController.registerGenerator);
 server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
+
+//evidence
 server.post("/api/upload-image",upload.single("file"),ipfsHandler.uploadToIPFS);
 server.get("/api/get-evidence/:cid",ipfsHandler.getFromIPFS);
 

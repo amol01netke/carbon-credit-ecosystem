@@ -5,8 +5,6 @@ import React, { useState } from "react";
 const UserSelection=()=>{
     const [userType,setUserType]=useState("generator");
 
-    //console.log(userType);
-
     return (
     <React.Fragment>
         <div className="user-selection">
@@ -39,7 +37,8 @@ const UserSelection=()=>{
 
             </div> 
         </div>
-    </React.Fragment>);
+    </React.Fragment>
+    );
 }
 
 export default UserSelection;

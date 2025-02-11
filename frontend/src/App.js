@@ -63,11 +63,12 @@ const App=()=>{
   }
 
   return (
-    <Router>
+  <Router>
       <div className="App">
         {routes}
       </div>
-    </Router>);
+    </Router>
+  );
 };
 
 export default App;

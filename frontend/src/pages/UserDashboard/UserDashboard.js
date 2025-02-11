@@ -6,7 +6,7 @@ import getWeb3 from "../../handlers/Web3Handler";
 import mintTokensABI from "../../abis/MintTokens.json";
 import buyCreditsABI from "../../abis/BuyCredits.json";
 
-const contractAddress_mint="0x83387Df4A92E93ECdf1105E27E7EfB2e9b6171b2"
+const contractAddress_mint="0xF9F87DEaB7f7CAf4aC94015F884582831f279cCA";
 const contractAddress_buy="0xDE0f9a2ED86e2bE0Be3e9A7B1fD91e51235426B2";
 
 const GeneratorDashboard=(props)=>{
@@ -46,34 +46,6 @@ const GeneratorDashboard=(props)=>{
         } 
     }
         
-    const handleMintTokens=async()=>{
-        if (!web3 || !contract || !userWalletAddress) {
-            console.error('Web3, contract, or user wallet not available!');
-            return;
-        }
-
-        if (mintAmount <= 0) {
-            console.error("Please enter a valid mint amount greater than 0.");
-            return;
-        }
-
-        try{
-            await contract.methods.mint(mintAmount).send({
-                from: userWalletAddress,
-                value: web3.utils.toWei((mintAmount * 0.01).toString(), "ether")
-            });
-                
-            console.log(`${mintAmount} tokens minted!`);
-        }catch(error){
-            console.error(error.message);
-        }
-    }
-        
-    const handleLogout=()=>{
-        props.setIsLoggedIn(false);
-        console.log(`Logged out!`);
-    }
-
     const handleFileChange=(e)=>{
         const selectedFile = e.target.files[0];
         console.log(selectedFile);
@@ -113,32 +85,68 @@ const GeneratorDashboard=(props)=>{
         }
     };
 
-    return (
-        <React.Fragment>
-            <div>
-                <h1>GENERATOR (FARMER) DASHBOARD</h1>
-                
-                <button onClick={handleConnectWallet}>Connect Wallet</button>
-                <br/>
-                <h3>User Ethereum Wallet Address : {userWalletAddress}</h3>
-                <br/>
+    const handleMintTokens=async()=>{
+        if (!web3 || !contract || !userWalletAddress) {
+            console.error('Web3, contract, or user wallet not available!');
+            return;
+        }
 
-                <input type="file" accept=".json" onChange={handleFileChange}/>
-                <br/>   
-                <button type="submit" onClick={handleFileUpload}>Upload Evidence</button>
-                <br/>
+        if (mintAmount <= 0) {
+            console.error("Please enter a valid mint amount greater than 0.");
+            return;
+        }
+
+        try{
+            await contract.methods.mint(mintAmount).send({
+                from: userWalletAddress,
+                value: web3.utils.toWei((mintAmount * 0.01).toString(), "ether")
+            });
                 
-                <input type="number" 
-                    placeholder="Enter amount to mint" 
-                    value={mintAmount} 
-                    onChange={(e)=>setMintAmount(e.target.value)}
-                />
-                <button onClick={handleMintTokens}>Mint Tokens</button>
-                <br/><br/>
+            console.log(`${mintAmount} tokens minted!`);
+        }catch(error){
+            console.error(error.message);
+        }
+    }
+        
+    const handleLogout=()=>{
+        props.setIsLoggedIn(false);
+        console.log(`Logged out!`);
+    }
+
+    return (
+    <React.Fragment>
+        <div>
+            <h1>GENERATOR DASHBOARD</h1>
                 
-                <button onClick={handleLogout}>Logout</button>
-            </div>
-        </React.Fragment>);
+            {/*wallet connection*/}
+            <br/><br/>
+            <button onClick={handleConnectWallet}>Connect Wallet</button>
+            <br/>
+            <h3>User Ethereum Wallet Address : {userWalletAddress}</h3>
+                
+                
+            {/*evidence upload*/}
+            <br/><br/>
+            <input type="file" accept=".json" onChange={handleFileChange}/>
+            <br/>   
+            <button type="submit" onClick={handleFileUpload}>Upload Evidence</button>
+            
+            
+            {/*token minting*/}
+            <br/><br/>
+            <input type="number" 
+                placeholder="Enter amount to mint" 
+                value={mintAmount} 
+                onChange={(e)=>setMintAmount(e.target.value)}
+            />
+            <button onClick={handleMintTokens}>Mint Tokens</button>
+                
+            {/*logout*/}    
+            <br/><br/>
+            <button onClick={handleLogout}>Logout</button>
+        </div>
+    </React.Fragment>
+    );
 }
 
 const ConsumerDashboard=(props)=>{
@@ -210,13 +218,21 @@ const ConsumerDashboard=(props)=>{
         <React.Fragment>
             <div>               
                 <h1>CONSUMER DASHBOARD</h1>
-                <button onClick={handleConnectWallet}>CONNECT WALLET</button><br/>
+
+                {/*wallet connection*/}
+                <br/><br/>
+                <button onClick={handleConnectWallet}>Connect Wallet</button>
+                
+                {/*token transfer*/}
+                <br/><br/>
                 <input type="number"
                  value={buyAmount} 
-                 onChange={(e)=>setBuyAmount(e.target.value)}/><button onClick={buyCredits}>BUY</button>
+                 onChange={(e)=>setBuyAmount(e.target.value)}/>
                 <br/>
-                <input type="number"/><button>SELL</button>
-                <br/>
+                <button onClick={buyCredits}>Buy</button>
+                
+                {/*logout*/}
+                <br/><br/>
                 <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
@@ -226,8 +242,7 @@ const ValidatorDashboard=(props)=>{
     const [fetchedCID,setFetchedCID]=useState("");
     const [jsonInput, setJsonInput] = useState("");
     const [genAddress,setGenAddress]=useState("");
-    const [creditAmount, setCreditAmount] = useState(0);
-    
+    const [creditAmount, setCreditAmount] = useState(0);  
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null);
     const [contract,setContract]=useState(null);
@@ -251,15 +266,12 @@ const ValidatorDashboard=(props)=>{
                 }
             });
     
-            if (!response.ok) {
-                console.error(`Error: ${response.status} ${response.statusText}`);
-                return;
-            }
-    
+            
             const data = await response.json();
             console.log(data.walletAddress);
             setGenAddress(data.walletAddress);
-
+            console.log(genAddress);
+            
             const fileContent=data.fileContent;
             // Create a Blob from JSON
             const blob = new Blob([JSON.stringify(fileContent, null, 2)], { type: "application/json" });
@@ -361,16 +373,25 @@ const ValidatorDashboard=(props)=>{
     return (
         <React.Fragment>
             <div>
-                <h1>VALIDATOR (GOVT. DEPT) DASHBOARD</h1>
-                <button onClick={handleConnectWallet}>CONNECT</button>
-               <input type="text" 
+                <h1>VALIDATOR DASHBOARD</h1>
+                
+                {/*wallet connection*/}
+                <br/><br/>
+                <button onClick={handleConnectWallet}>Conenct Wallet</button>
+                
+                {/*fetch evidence*/}
+                <br/><br/>
+                <input type="text" 
                     placeholder="Enter CID"
                     onChange={handleEvidenceChange}
                     value={fetchedCID}
                 />
                 <br/>   
                 <button onClick={fetchEvidence}>Fetch Evidence</button>
-                <br/>
+                
+                
+                {/*verify evidence*/}
+                <br/><br/>
                 {fetchedCID && (
                 <div>
                     <h3>CID:</h3>
@@ -378,22 +399,24 @@ const ValidatorDashboard=(props)=>{
                 </div>
                 )}
                 <textarea
-                    rows="10"
+                    rows="5"
                     placeholder="Paste JSON content here..."
                     value={jsonInput}
                     onChange={(e) => setJsonInput(e.target.value)}
                 ></textarea>
-                <br/>   
+
+                {/*approval status*/}
+                <br/><br/>   
                 <button onClick={handleVerification}>Verify Evidence</button>
                 <br/>
                 <h3>Status: </h3>
-                <br/>
                 
+                {/*logout*/}
+                <br/><br/>
                 <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
 }
-
 
 const UserDashboard=(props)=>{
     const {userType}=props.location.state;
@@ -418,14 +441,14 @@ const UserDashboard=(props)=>{
     }
 
     return (
-        <React.Fragment>
-            <Header/>
-                <div className="user-dashboard">
-                    <Component setIsLoggedIn={setIsLoggedIn}/>
-                </div>
-                <Footer/>
-        </React.Fragment>
-    )
+    <React.Fragment>
+        <Header/>
+            <div className="user-dashboard">
+                <Component setIsLoggedIn={setIsLoggedIn}/>
+            </div>
+        <Footer/>
+    </React.Fragment>
+    );
 }
 
 export default UserDashboard;
