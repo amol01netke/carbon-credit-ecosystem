@@ -5,3 +5,12 @@
     align-items: center;
     text-align: center;
 }
+
+.select-project-type{
+    border-radius: 10px 10px;
+    font-size: 1em;
+    padding: 10px 10px;
+    margin: 10px 10px;
+    width: 20vw;
+    text-align: center;
+}

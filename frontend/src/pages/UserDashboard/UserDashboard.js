@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import mintTokensABI from "../../abis/MintTokens.json";
 import buyCreditsABI from "../../abis/BuyCredits.json";
+import { Link } from "react-router-dom/cjs/react-router-dom.min";
 
 const contractAddress_mint="0xF9F87DEaB7f7CAf4aC94015F884582831f279cCA";
 const contractAddress_buy="0xDE0f9a2ED86e2bE0Be3e9A7B1fD91e51235426B2";
@@ -15,7 +16,7 @@ const GeneratorDashboard=(props)=>{
     const [contract,setContract]=useState(null);
     const [mintAmount,setMintAmount]=useState(0);
     const [filePath, setFilePath] = useState(null); 
-    const [uploadedCID, setUploadedCID] = useState(""); 
+    const [uploadedCID, setUploadedCID] = useState("");
 
     const handleConnectWallet=async()=>{
         try{
@@ -112,6 +113,9 @@ const GeneratorDashboard=(props)=>{
         props.setIsLoggedIn(false);
         console.log(`Logged out!`);
     }
+    
+    
+    const [sequestrationType,setSequestrationType]=useState("afforestation");
 
     return (
     <React.Fragment>
@@ -127,12 +131,29 @@ const GeneratorDashboard=(props)=>{
                 
             {/*evidence upload*/}
             <br/><br/>
+            <h3>Select Carbon Sequestration Method</h3>
+            <select className="select-project-type" onChange={(e)=>setSequestrationType(e.target.value)}>
+                <option value="afforestation">Afforestation</option>
+                <option value="renewable-energy">Renewable Energy</option>
+                <option value="soil">Soil</option>
+            </select>  
+            <br/>
+            <Link 
+                to={{
+                    pathname:'/user-evidence',
+                    state:{sequestrationType}
+                }}
+            >
+                <button>Proceed</button>
+            </Link>
+            
+            {/*<br/>
             <input type="file" accept=".json" onChange={handleFileChange}/>
             <br/>   
             <button type="submit" onClick={handleFileUpload}>Upload Evidence</button>
+            */}
             
-            
-            {/*token minting*/}
+            {/*token minting*
             <br/><br/>
             <input type="number" 
                 placeholder="Enter amount to mint" 
@@ -140,7 +161,7 @@ const GeneratorDashboard=(props)=>{
                 onChange={(e)=>setMintAmount(e.target.value)}
             />
             <button onClick={handleMintTokens}>Mint Tokens</button>
-                
+                */}
             {/*logout*/}    
             <br/><br/>
             <button onClick={handleLogout}>Logout</button>
@@ -377,7 +398,7 @@ const ValidatorDashboard=(props)=>{
                 
                 {/*wallet connection*/}
                 <br/><br/>
-                <button onClick={handleConnectWallet}>Conenct Wallet</button>
+                <button onClick={handleConnectWallet}>Connect Wallet</button>
                 
                 {/*fetch evidence*/}
                 <br/><br/>
