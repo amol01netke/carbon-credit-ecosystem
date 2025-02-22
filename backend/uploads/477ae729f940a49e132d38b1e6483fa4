@@ -1,0 +1,24 @@
+{
+  "farmer_id": "FARM12345",
+  "farm_location": "Lat: 28.7041, Lon: 77.1025",
+  "soil_tests": [
+    {
+      "test_date": "2025-01-10",
+      "carbon_content": "2.5%",
+      "nitrogen": "0.3%",
+      "phosphorus": "0.15%",
+      "potassium": "0.2%",
+      "soil_organic_matter": "3.2%"
+    },
+    {
+      "test_date": "2024-01-10",
+      "carbon_content": "1.8%",
+      "nitrogen": "0.2%",
+      "phosphorus": "0.12%",
+      "potassium": "0.15%",
+      "soil_organic_matter": "2.5%"
+    }
+  ],
+  "certified_by": "AgriTech Labs",
+  "certification_doc_cid": "QmXYZ...789"
+}

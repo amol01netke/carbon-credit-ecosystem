@@ -6,17 +6,19 @@ import getWeb3 from "../../handlers/Web3Handler";
 import mintTokensABI from "../../abis/MintTokens.json";
 import buyCreditsABI from "../../abis/BuyCredits.json";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import {useWallet} from "../../context/WalletContext";
 
 const contractAddress_mint="0xF9F87DEaB7f7CAf4aC94015F884582831f279cCA";
 const contractAddress_buy="0xDE0f9a2ED86e2bE0Be3e9A7B1fD91e51235426B2";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
-    const [userWalletAddress,setUserWalletAddress]=useState("");
+    const {userWalletAddress,setUserWalletAddress}=useWallet();
     const [contract,setContract]=useState(null);
     const [mintAmount,setMintAmount]=useState(0);
     const [filePath, setFilePath] = useState(null); 
     const [uploadedCID, setUploadedCID] = useState("");
+    const [sequestrationType,setSequestrationType]=useState("afforestation");
 
     const handleConnectWallet=async()=>{
         try{
@@ -47,76 +49,11 @@ const GeneratorDashboard=(props)=>{
         } 
     }
         
-    const handleFileChange=(e)=>{
-        const selectedFile = e.target.files[0];
-        console.log(selectedFile);
-        setFilePath(selectedFile);
-    }
-
-    const handleFileUpload = async () => {
-        if(!filePath){
-            console.log("Please select a file!");
-            return;
-        }
-
-        const formData=new FormData();
-        formData.append("file",filePath);
-        formData.append("userWalletAddress",userWalletAddress);
-
-        try {
-            const response = await fetch("http://localhost:8000/api/upload-image", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    // Do not set Content-Type manually; FormData sets it correctly
-                    'Accept': 'application/json',
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log(data);
-                setUploadedCID(data.cid);
-            } else {
-                const error = await response.json();
-                console.log(error);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleMintTokens=async()=>{
-        if (!web3 || !contract || !userWalletAddress) {
-            console.error('Web3, contract, or user wallet not available!');
-            return;
-        }
-
-        if (mintAmount <= 0) {
-            console.error("Please enter a valid mint amount greater than 0.");
-            return;
-        }
-
-        try{
-            await contract.methods.mint(mintAmount).send({
-                from: userWalletAddress,
-                value: web3.utils.toWei((mintAmount * 0.01).toString(), "ether")
-            });
-                
-            console.log(`${mintAmount} tokens minted!`);
-        }catch(error){
-            console.error(error.message);
-        }
-    }
-        
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
         console.log(`Logged out!`);
     }
     
-    
-    const [sequestrationType,setSequestrationType]=useState("afforestation");
-
     return (
     <React.Fragment>
         <div>
@@ -135,7 +72,7 @@ const GeneratorDashboard=(props)=>{
             <select className="select-project-type" onChange={(e)=>setSequestrationType(e.target.value)}>
                 <option value="afforestation">Afforestation</option>
                 <option value="renewable-energy">Renewable Energy</option>
-                <option value="soil">Soil</option>
+                <option value="soil-carbon-sequestration">Soil Carbon Sequestration</option>
             </select>  
             <br/>
             <Link 
@@ -147,21 +84,6 @@ const GeneratorDashboard=(props)=>{
                 <button>Proceed</button>
             </Link>
             
-            {/*<br/>
-            <input type="file" accept=".json" onChange={handleFileChange}/>
-            <br/>   
-            <button type="submit" onClick={handleFileUpload}>Upload Evidence</button>
-            */}
-            
-            {/*token minting*
-            <br/><br/>
-            <input type="number" 
-                placeholder="Enter amount to mint" 
-                value={mintAmount} 
-                onChange={(e)=>setMintAmount(e.target.value)}
-            />
-            <button onClick={handleMintTokens}>Mint Tokens</button>
-                */}
             {/*logout*/}    
             <br/><br/>
             <button onClick={handleLogout}>Logout</button>
@@ -273,7 +195,7 @@ const ValidatorDashboard=(props)=>{
         console.log("Logged out!");
     }
         
-    const fetchEvidence = async () => {
+    const fetchLatestEvidence = async () => {
         if (!fetchedCID) {
             console.log("Please enter a CID");
             return;
@@ -400,7 +322,7 @@ const ValidatorDashboard=(props)=>{
                 <br/><br/>
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
                 
-                {/*fetch evidence*/}
+                {/*fetch evidence
                 <br/><br/>
                 <input type="text" 
                     placeholder="Enter CID"
@@ -408,8 +330,7 @@ const ValidatorDashboard=(props)=>{
                     value={fetchedCID}
                 />
                 <br/>   
-                <button onClick={fetchEvidence}>Fetch Evidence</button>
-                
+                <button onClick={fetchEvidence}>Fetch Evidence</button>*/}
                 
                 {/*verify evidence*/}
                 <br/><br/>

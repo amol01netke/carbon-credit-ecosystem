@@ -6,37 +6,30 @@ const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
 
 
 const uploadToIPFS = async (req, res) => {
-  const file = req.file;
-  const address=req.body.userWalletAddress;
+    const [cid,setCID]=useState("");
+
+    const file = req.file;
 
   if (!file) {
       return res.status(400).json({ error: "No file uploaded" });
   }
 
-  // Validate file type (e.g., image files)
-  
-
   try {
-      const fileBuffer = await fs.readFile(file.path);
-      const added = await ipfs.add(fileBuffer);
-      console.log("File uploaded to IPFS:", added);
+    const fileBuffer = await fs.readFile(file.path);
+    const fileAdded = await ipfs.add(fileBuffer);
+    const fileCID = fileAdded.path;
+    setCID(fileCID);
 
-      const newEvidence=new Evidence({
-        cid:added.path,
-        walletAddress:address
-      });
-      await newEvidence.save();
-
-      res.json({ 
-        cid: added.path,
-        walletAddress:address
-        });
-
+    //store on evidence schema
+    
+    res.json({ fileCID });
   } catch (error) {
       console.error("Error uploading to IPFS:", error);
       res.status(500).json({ error: "Error uploading to IPFS" });
-  }
+  } 
 };
+
+//QmREn8VAABpxjKWeXvFZhaMcxZwz3bzajtKkp2eUaxrBYv
 
 const getFromIPFS = async (req, res) => {
     const { cid } = req.params ;  // ✅ FIX: Use query params, not req.params

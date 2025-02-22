@@ -2,6 +2,8 @@ import React from "react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import "./UserEvidence.css";
+import { useState } from "react";
+import { useWallet } from "../../context/WalletContext";
 
 const Afforestation=()=>{
     return (
@@ -19,17 +21,116 @@ const RenewableEnergy=()=>{
     );
 }
 
-const Soil=()=>{
+const SoilCarbonSequestration=()=>{
+    const [file,setFile]=useState(null);
+    const {userWalletAddress}=useWallet();
+   
+
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
+    
+    const handleSubmit = async(e) => {
+        e.preventDefault();
+
+        if (!file) {
+            alert("Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("walletAddress",userWalletAddress);
+
+        try {
+            const response = await fetch("http://localhost:8000/api/upload-user-evidence", {
+                method: "POST",
+                body: formData, 
+                headers: {
+                    "Accept": "application/json",
+                },
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Response:", data);
+                alert("Data Submitted!");
+            } else {
+                const error = await response.json();
+                console.error("Error:", error);
+            }
+        } catch (error) {
+            console.error("Request Failed:", error);
+        }
+    }
+
     return (
         <React.Fragment>
-            <h3>Soil</h3>
+            <h3>Soil Carbon Sequestration</h3>
+            
+           <form onSubmit={handleSubmit} className="soil-form">
+
+             {/*   
+                <input
+                    type="number"
+                    name="landArea"
+                    value={formData.landArea}
+                    onChange={handleChange}
+                    placeholder="Land Area (in hectares)"
+                />
+                
+                <br/><br/>
+                <select
+                    name="soilType"
+                    value={formData.soilType}
+                    onChange={handleChange}
+                >
+                    <option value="">Select Soil Type</option>
+                    <option value="clay">Clay</option>
+                    <option value="sandy">Sandy</option>
+                    <option value="loam">Loam</option>
+                    <option value="peat">Peat</option>
+                </select>
+                
+                <br/><br/>
+                <input
+                    type="number"
+                    step="0.01"
+                    name="organicContent"
+                    value={formData.organicContent}
+                    onChange={handleChange}
+                    placeholder="Organic Carbon Content (%)"
+                />
+                
+                <br/><br/>
+                <textarea
+                    name="farmingPractices"
+                    value={formData.farmingPractices}
+                    onChange={handleChange}
+                    placeholder="Describe no-till farming, cover cropping, etc."
+                    rows="5"
+                />*/}
+
+                <br/><br/>
+                <label>
+                    Upload Soil Test Report
+                </label>
+                <br/>
+                <input type="file" onChange={handleFileChange} />
+               
+                <br/><br/>
+                <button type="submit">Submit</button>
+            </form>
         </React.Fragment>
     );
 }
 
 const UserEvidence=(props)=>{
     const {sequestrationType}=props.location.state;
-  
+    const {userWalletAddress}=useWallet();
+
+    console.log(userWalletAddress);
+    
     let Component;
     switch(sequestrationType){
         case "afforestation":
@@ -40,8 +141,8 @@ const UserEvidence=(props)=>{
             Component=RenewableEnergy;
             break;
             
-        case "soil":
-            Component=Soil;
+        case "soil-carbon-sequestration":
+            Component=SoilCarbonSequestration;
             break;
             
         default:
