@@ -1,7 +1,7 @@
 import Footer from "../../components/Footer/Footer";
 import Header from "../../components/Header/Header";
 import "./UserDashboard.css";
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import mintTokensABI from "../../abis/MintTokens.json";
 import buyCreditsABI from "../../abis/BuyCredits.json";
@@ -182,66 +182,40 @@ const ConsumerDashboard=(props)=>{
 }
 
 const ValidatorDashboard=(props)=>{
-    const [fetchedCID,setFetchedCID]=useState("");
     const [jsonInput, setJsonInput] = useState("");
     const [genAddress,setGenAddress]=useState("");
     const [creditAmount, setCreditAmount] = useState(0);  
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null);
     const [contract,setContract]=useState(null);
+    const [fetchedCID, setFetchedCID] = useState("");
+
+    //check if any file is uploaded in the server
+    useEffect(() => {
+        const socket = new WebSocket("ws://localhost:8080");
+
+        socket.onopen = () => {
+            console.log("Connected to WebSocket server!");
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log("New Evidence Received:", data);
+            setFetchedCID(data.cid);
+        };
+
+        socket.onclose = () => {
+            console.log("WebSocket Disconnected");
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, []);
 
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
         console.log("Logged out!");
-    }
-        
-    const fetchLatestEvidence = async () => {
-        if (!fetchedCID) {
-            console.log("Please enter a CID");
-            return;
-        }
-    
-        try {
-            const response = await fetch(`http://localhost:8000/api/get-evidence/${fetchedCID}`, {
-                method: "GET",
-                headers: {
-                    'Accept': 'application/json',
-                }
-            });
-    
-            
-            const data = await response.json();
-            console.log(data.walletAddress);
-            setGenAddress(data.walletAddress);
-            console.log(genAddress);
-            
-            const fileContent=data.fileContent;
-            // Create a Blob from JSON
-            const blob = new Blob([JSON.stringify(fileContent, null, 2)], { type: "application/json" });
-    
-            // Create a URL for the Blob
-            const downloadUrl = URL.createObjectURL(blob);
-    
-            // Create an anchor element for downloading
-            const a = document.createElement("a");
-            a.href = downloadUrl;
-            a.download = `${fetchedCID}.json`; // Name file as CID.json
-            document.body.appendChild(a);
-            a.click(); // Trigger download
-            document.body.removeChild(a); // Cleanup
-    
-            // Free up memory
-            URL.revokeObjectURL(downloadUrl);
-    
-            console.log("JSON file downloaded successfully!");
-    
-        } catch (error) {
-            console.error("Error fetching evidence:", error.message);
-        }
-    }
-
-    const handleEvidenceChange=(e)=>{
-        setFetchedCID(e.target.value);
     }
 
     const handleConnectWallet=async()=>{
@@ -272,46 +246,6 @@ const ValidatorDashboard=(props)=>{
             console.error("Error connecting wallet!");   
         } 
     }
-       
-    const handleVerification=async()=>{
-       console.log("clicked!");
-
-        try {
-            
-            const parsedData = JSON.parse(jsonInput); // Parse JSON content
-
-            //credit calculation
-            if (!parsedData.soil_tests || parsedData.soil_tests.length < 2) {
-                alert("Invalid JSON format. At least two soil test records required.");
-                return;
-            }
-    
-            // Extract latest and previous carbon content
-            const latestCarbon = parseFloat(parsedData.soil_tests[0].carbon_content);
-            const prevCarbon = parseFloat(parsedData.soil_tests[1].carbon_content);
-    
-            // Calculate credits (100 per 1% increase)
-            const totalCredits = Math.max(0, Math.round((latestCarbon - prevCarbon) * 100));
-    
-            setCreditAmount(totalCredits); // Update state
-            console.log(`Allotting ${creditAmount} credits...`);
-            
-            try{
-                await contract.methods.mint(creditAmount).send({
-                    from: genAddress,
-                    value: web3.utils.toWei((creditAmount * 0.01).toString(), "ether")
-                });
-                        
-                console.log(`${creditAmount} tokens alloted!`);
-            }catch(error){
-                console.error(error.message);
-            }
-        }
-        catch (error) {
-            console.error("Error verifying evidence:", error);
-            alert("Verification failed. Invalid JSON format.");
-        }
-    }
 
     return (
         <React.Fragment>
@@ -321,37 +255,6 @@ const ValidatorDashboard=(props)=>{
                 {/*wallet connection*/}
                 <br/><br/>
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
-                
-                {/*fetch evidence
-                <br/><br/>
-                <input type="text" 
-                    placeholder="Enter CID"
-                    onChange={handleEvidenceChange}
-                    value={fetchedCID}
-                />
-                <br/>   
-                <button onClick={fetchEvidence}>Fetch Evidence</button>*/}
-                
-                {/*verify evidence*/}
-                <br/><br/>
-                {fetchedCID && (
-                <div>
-                    <h3>CID:</h3>
-                    <p>{fetchedCID}</p>
-                </div>
-                )}
-                <textarea
-                    rows="5"
-                    placeholder="Paste JSON content here..."
-                    value={jsonInput}
-                    onChange={(e) => setJsonInput(e.target.value)}
-                ></textarea>
-
-                {/*approval status*/}
-                <br/><br/>   
-                <button onClick={handleVerification}>Verify Evidence</button>
-                <br/>
-                <h3>Status: </h3>
                 
                 {/*logout*/}
                 <br/><br/>

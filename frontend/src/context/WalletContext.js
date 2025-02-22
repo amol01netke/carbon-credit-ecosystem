@@ -4,10 +4,9 @@ const WalletContext = createContext();
 
 export const WalletProvider = ({ children }) => {
     const [userWalletAddress, setUserWalletAddress] = useState("");
-    const [sequestrationType, setSequestrationType] = useState("");
-
+   
     return (
-        <WalletContext.Provider value={{ userWalletAddress, setUserWalletAddress, sequestrationType, setSequestrationType }}>
+        <WalletContext.Provider value={{ userWalletAddress, setUserWalletAddress }}>
             {children}
         </WalletContext.Provider>
     );

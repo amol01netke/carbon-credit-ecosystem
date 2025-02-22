@@ -49,4 +49,4 @@ mongoose.connect(
   .catch((error) => {
     console.log(`MongoDB connection failed!`);
     console.log(error.message);
-  });
+});

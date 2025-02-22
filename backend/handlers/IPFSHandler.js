@@ -6,9 +6,8 @@ const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
 
 
 const uploadToIPFS = async (req, res) => {
-    const [cid,setCID]=useState("");
-
     const file = req.file;
+    const {userWalletAddress}=req.body;
 
   if (!file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -18,11 +17,16 @@ const uploadToIPFS = async (req, res) => {
     const fileBuffer = await fs.readFile(file.path);
     const fileAdded = await ipfs.add(fileBuffer);
     const fileCID = fileAdded.path;
-    setCID(fileCID);
-
-    //store on evidence schema
     
-    res.json({ fileCID });
+    //store on evidence schema
+    const newEvidence = new Evidence({
+        walletAddress: userWalletAddress,
+        cid: fileCID
+    });
+
+    await newEvidence.save();
+
+    res.json({ fileCID, message: "File uploaded to IPFS and data stored in MongoDB successfully!" });
   } catch (error) {
       console.error("Error uploading to IPFS:", error);
       res.status(500).json({ error: "Error uploading to IPFS" });
