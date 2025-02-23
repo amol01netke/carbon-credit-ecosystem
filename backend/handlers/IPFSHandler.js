@@ -1,13 +1,13 @@
 const ipfsClient = require('ipfs-http-client');
 const fs = require('fs/promises');
 const Evidence = require('../models/evidence.js');
+const pdf = require("pdf-parse");
 
 const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
 
 
 const uploadToIPFS = async (req, res) => {
     const file = req.file;
-    const {userWalletAddress}=req.body;
 
   if (!file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -20,7 +20,6 @@ const uploadToIPFS = async (req, res) => {
     
     //store on evidence schema
     const newEvidence = new Evidence({
-        walletAddress: userWalletAddress,
         cid: fileCID
     });
 
@@ -35,8 +34,8 @@ const uploadToIPFS = async (req, res) => {
 
 //QmREn8VAABpxjKWeXvFZhaMcxZwz3bzajtKkp2eUaxrBYv
 
-const getFromIPFS = async (req, res) => {
-    const { cid } = req.params ;  // ✅ FIX: Use query params, not req.params
+const fetchAndVerify= async (req, res) => {
+    const { cid } = req.params ;  // from the url
 
     if (!cid) {
         return res.status(400).json({ error: "CID is required" });
@@ -52,22 +51,17 @@ const getFromIPFS = async (req, res) => {
             return res.status(404).json({ error: "File not found on IPFS" });
         }
 
-        const fileBuffer = Buffer.concat(fileChunks);
-        let jsonData;
+        const fileBuffer = Buffer.concat(fileChunks);  // ✅ Keep the file as a Buffer
+        let extractedText = "";
 
-        try {
-            jsonData = JSON.parse(fileBuffer.toString());  // ✅ FIX: JSON Parsing Error Handling
-        } catch (parseError) {
-            return res.status(500).json({ error: "Invalid JSON format in IPFS file" });
-        }
-
-        const evidence = await Evidence.findOne({ cid });
-
-        const walletAddress = evidence.walletAddress;
-
-        res.setHeader("Content-Type", "application/json");
-        res.json({fileContent: jsonData, walletAddress});
-
+        const pdfData = await pdf(fileBuffer);  // ✅ Extract text from PDF
+        extractedText = pdfData.text;
+        console.log(extractedText);
+        
+        return res.status(200).json({
+            status: "OK",
+            extractedText: extractedText
+        });
     } catch (error) {
         console.error("Error fetching from IPFS:", error);
         res.status(500).json({ error: "Error fetching file from IPFS" });
@@ -75,4 +69,4 @@ const getFromIPFS = async (req, res) => {
 }
 
 exports.uploadToIPFS=uploadToIPFS;
-exports.getFromIPFS=getFromIPFS;
+exports.fetchAndVerify=fetchAndVerify;

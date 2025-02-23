@@ -190,6 +190,25 @@ const ValidatorDashboard=(props)=>{
     const [contract,setContract]=useState(null);
     const [fetchedCID, setFetchedCID] = useState("");
 
+    //fetch and verify the evidence
+    const fetchAndVerifyEvidence=async(cid)=>{
+        try{
+            const response = await fetch(`http://localhost:8000/api/fetch-user-evidence/${cid}`, {
+                method: "GET"
+            });
+
+            const data = await response.json();
+            
+            if (response.ok && data.status==="OK") {
+                console.log("Evidence is verified.. now let us allot tokens to generator !",data);
+            } else {
+                console.error("Evidence is not proper !",data);
+            }
+        }catch(error){
+            console.error("Error while fetching !",error);
+        }
+    }
+
     //check if any file is uploaded in the server
     useEffect(() => {
         const socket = new WebSocket("ws://localhost:8080");
@@ -198,10 +217,13 @@ const ValidatorDashboard=(props)=>{
             console.log("Connected to WebSocket server!");
         };
 
-        socket.onmessage = (event) => {
+        socket.onmessage = async(event) => {
             const data = JSON.parse(event.data);
             console.log("New Evidence Received:", data);
             setFetchedCID(data.cid);
+            
+            //fetch the pdf and verify it
+            await fetchAndVerifyEvidence(data.cid);
         };
 
         socket.onclose = () => {

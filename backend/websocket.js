@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const mongoose = require("mongoose");
-const Evidence = require("./models/evidence"); // Import Evidence model
+const Evidence = require("./models/evidence");
 
 mongoose.connect(
     `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.peteh.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`,
@@ -8,15 +8,15 @@ mongoose.connect(
         useNewUrlParser: true,
         useUnifiedTopology: true
     }
-).then(() => console.log("Connected to MongoDB")).catch(err => console.error("MongoDB Connection Error!"));
+).then(() => console.log("Socket connected to MongoDB")).catch(err => console.error("Socket cannot be connected!"));
 
 const wss = new WebSocket.Server({ port: 8080 });
 console.log("WebSocket Server Started on ws://localhost:8080");
 
-// WebSocket Connection
 wss.on("connection", (ws) => {
-    console.log("🔗 Validator Connected!");
+    console.log("Validator Connected!");
 
+    //check for new inserts
     const changeStream = Evidence.watch();
 
     changeStream.on("change", (change) => {
@@ -30,9 +30,8 @@ wss.on("connection", (ws) => {
         }
     });
 
-    // Handle WebSocket Disconnection
     ws.on("close", () => {
-        console.log("❌ Validator Disconnected");
+        console.log("Validator Disconnected");
         changeStream.close(); // Close MongoDB change stream
     });
 });
