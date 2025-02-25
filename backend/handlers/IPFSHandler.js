@@ -32,9 +32,7 @@ const uploadToIPFS = async (req, res) => {
   } 
 };
 
-//QmREn8VAABpxjKWeXvFZhaMcxZwz3bzajtKkp2eUaxrBYv
-
-const fetchAndVerify= async (req, res) => {
+const fetchFromIPFS= async (req, res) => {
     const { cid } = req.params ;  // from the url
 
     if (!cid) {
@@ -56,12 +54,26 @@ const fetchAndVerify= async (req, res) => {
 
         const pdfData = await pdf(fileBuffer);  // ✅ Extract text from PDF
         extractedText = pdfData.text;
-        console.log(extractedText);
         
+        let tokensAllocated=0;
+        const carbonMatch = extractedText.match(/Carbon Sequestration Potential:\s*([\d.]+)\s*Tons CO2\/ha/i);
+        if (carbonMatch) {
+            const carbonSequestration = parseFloat(carbonMatch[1]);
+            if (carbonSequestration >= 5) {
+                tokensAllocated += 100;
+            } else if (carbonSequestration >= 3) {
+                tokensAllocated += 50;
+            } else {
+                tokensAllocated += 20;
+            }
+        }
+
         return res.status(200).json({
             status: "OK",
-            extractedText: extractedText
+            extractedText: extractedText,
+            tokens: tokensAllocated
         });
+        
     } catch (error) {
         console.error("Error fetching from IPFS:", error);
         res.status(500).json({ error: "Error fetching file from IPFS" });
@@ -69,4 +81,4 @@ const fetchAndVerify= async (req, res) => {
 }
 
 exports.uploadToIPFS=uploadToIPFS;
-exports.fetchAndVerify=fetchAndVerify;
+exports.fetchFromIPFS=fetchFromIPFS;

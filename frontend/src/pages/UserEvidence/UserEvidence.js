@@ -34,7 +34,7 @@ const SoilCarbonSequestration = () => {
         socket.onerror = (error) => console.error("WebSocket Error:", error);
         socket.onclose = () => console.log("WebSocket Disconnected!");
 
-        return () => socket.close(); // Cleanup WebSocket on component unmount
+        return () => socket.close();
     }, []);
 
     const handleFileChange = (e) => {
@@ -53,7 +53,7 @@ const SoilCarbonSequestration = () => {
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://localhost:8000/api/upload-user-evidence", {
+            const response = await fetch("http://localhost:8000/api/upload-evidence", {
                 method: "POST",
                 body: formData,
                 headers: {
@@ -66,7 +66,6 @@ const SoilCarbonSequestration = () => {
                 console.log("Response:", data);
                 alert("Data Submitted!");
 
-                // Send WebSocket message to notify about the new upload
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({ message: "New soil test report uploaded!", cid: data.cid }));
                 }

@@ -3,10 +3,10 @@ import { createContext, useContext, useState } from "react";
 const WalletContext = createContext();
 
 export const WalletProvider = ({ children }) => {
-    const [userWalletAddress, setUserWalletAddress] = useState("");
+    const [generatorAddress, setGeneratorAddress] = useState("");
    
     return (
-        <WalletContext.Provider value={{ userWalletAddress, setUserWalletAddress }}>
+        <WalletContext.Provider value={{ generatorAddress, setGeneratorAddress }}>
             {children}
         </WalletContext.Provider>
     );
