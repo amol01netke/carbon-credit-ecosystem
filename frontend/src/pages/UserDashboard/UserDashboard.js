@@ -3,14 +3,9 @@ import Header from "../../components/Header/Header";
 import "./UserDashboard.css";
 import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
-import mintTokensABI from "../../abis/MintTokens.json";
-import buyCreditsABI from "../../abis/BuyCredits.json";
-import sendTokensABI from "../../abis/SendTokens.json";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import {useWallet} from "../../context/WalletContext";
-
-// const contractAddress_mint="0xF9F87DEaB7f7CAf4aC94015F884582831f279cCA";
-// const contractAddress_buy="0xDE0f9a2ED86e2bE0Be3e9A7B1fD91e51235426B2";
+import AllocateTokens from "../../abis/AllocateTokens.json";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -180,6 +175,8 @@ const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null); 
     const {generatorAddress}=useWallet();
+    const [fetchedCID,setFetchedCID]=useState("");
+    const [tokens,setTokens]=useState(0);
        
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -206,59 +203,56 @@ const ValidatorDashboard=(props)=>{
             console.error("Error connecting wallet!");   
         } 
     }
-    
-    //send tokens to generator
-    const sendTokens=async(generatorAddress, tokenAmount)=>{
-        if (!web3 || !validatorAddress) {
-            console.error("Web3 or validator address is not initialized!");
-            return;
-        }
-    
-        const contractAddress = "0x205Cc4e87A3A66e5465c665C0c41586572DBAaCc"; // Replace with your actual contract address
-        const abi = [  // Contract ABI (Generated after deploying)
-            {
-                "inputs": [
-                    { "internalType": "address", "name": "recipient", "type": "address" },
-                    { "internalType": "uint256", "name": "amount", "type": "uint256" }
-                ],
-                "name": "sendTokens",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
-    
-        try {
-            const contract = new web3.eth.Contract(sendTokensABI, contractAddress);
-    
-            // Call sendTokens function from smart contract
-            await contract.methods.sendTokens(generatorAddress, tokenAmount).send({ from: "0x68439c463650d124b1d820f270b521AdB70D2695" });
-    
-            console.log(`✅ Sent ${tokenAmount} tokens to Generator: ${generatorAddress}`);
-        } catch (error) {
-            console.error("❌ Error sending tokens:", error);
-        }
-    }
 
     //verify evidence
-    const verifyEvidence=async(cid)=>{
+    const verifyEvidence=async()=>{
         try{
-            const response = await fetch(`http://localhost:8000/api/verify-evidence/${cid}`, {
+            const response = await fetch(`http://localhost:8000/api/verify-evidence/${fetchedCID}`, {
                 method: "GET"
             });
 
-            const data = await response.json();
-            
-            if (response.ok && data.status==="OK") {
+            if(response.ok){
+                const data = await response.json();
                 console.log(data);
-                sendTokens(data.tokens);
-            } else {
-                console.error("Evidence is not proper !",data);
+                setTokens(data.tokens);
             }
-        }catch(error){
-            console.error("Error while fetching !",error);
+        } catch(error){
+            console.log(error);
         }
     }
+
+    //allocate tokens
+    const allocateTokens = async () => {
+        try {
+            if (!web3) {
+                console.error("Web3 is not initialized! Connect wallet first.");
+                return;
+            }
+
+            const accounts = await web3.eth.getAccounts();
+            const contractAddress = "0xD5BC47e304DeD9e98A15A02610d306a2699Ab325"; // Replace with deployed contract address
+            const contract = new web3.eth.Contract(AllocateTokens.abi, contractAddress);
+
+            // Convert tokens to Ether (1 Token = 0.01 ETH)
+            const ethAmount = web3.utils.toWei((tokens * 0.01).toString(), "ether");
+
+            // Call Smart Contract function with Ether transfer
+            // await contract.methods
+            //     .approveAndTransferEther(fetchedCID, "0x6e6Fa5e57141a86bDE7B15Bd1AecFB1C9305dC3d", tokens)
+            //     .send({ from: accounts[0], value: ethAmount });
+
+            web3.eth.sendTransaction({
+                from: validatorAddress,
+                to: "0x6e6Fa5e57141a86bDE7B15Bd1AecFB1C9305dC3d",
+                value: ethAmount // Send 0.01 ETH
+            }).then(console.log);
+
+            console.log(`Successfully transferred ${ethAmount} ETH to ${generatorAddress}!`);
+
+        } catch (error) {
+            console.error("Smart Contract Execution Failed:", error);
+        }
+    };
 
     //logout
     const handleLogout=()=>{
@@ -274,13 +268,15 @@ const ValidatorDashboard=(props)=>{
             const socket = new WebSocket("ws://localhost:8080");
             socket.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
-                await verifyEvidence(data.cid);
+                setFetchedCID(data.cid);
+                console.log(data);
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
         };
         initializeWebSocket();
     }, []);
+
 
     return (
         <React.Fragment>
@@ -293,7 +289,17 @@ const ValidatorDashboard=(props)=>{
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
             
-                {/*fetch evidence - verify evidence -  allocate tokens*/}
+                {/*fetch evidence - verify evidence*/}
+                <br/><br/>
+                <h3>Fetched CID : {fetchedCID}</h3>
+                <br/>
+                <button onClick={verifyEvidence}>Verify Evidence</button>
+                
+                {/*allocate tokens*/}
+                <br/><br/>
+                <h3>Tokens to allocate : {tokens} </h3>
+                <br/>
+                <button onClick={allocateTokens}>Allocate Tokens</button>
 
                 {/*logout*/}
                 <br/><br/>

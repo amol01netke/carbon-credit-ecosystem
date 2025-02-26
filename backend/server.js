@@ -31,7 +31,7 @@ server.post("/api/register-validator", userController.registerValidator);
 
 //evidence
 server.post("/api/upload-evidence",upload.single("file"),ipfsHandler.uploadToIPFS);
-server.get("/api/verify-evidence/:cid",ipfsHandler.fetchFromIPFS);
+server.get("/api/verify-evidence/:cid",ipfsHandler.fetchAndVerifyFromIPFS);
 
 //connect with database and start the server
 mongoose.connect(

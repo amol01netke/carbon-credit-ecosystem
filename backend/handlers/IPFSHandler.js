@@ -1,10 +1,8 @@
 const ipfsClient = require('ipfs-http-client');
 const fs = require('fs/promises');
-const Evidence = require('../models/evidence.js');
+const { notifyValidators } = require('../websocket.js'); // Import WebSocket function
 const pdf = require("pdf-parse");
-
 const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
-
 
 const uploadToIPFS = async (req, res) => {
     const file = req.file;
@@ -18,12 +16,7 @@ const uploadToIPFS = async (req, res) => {
     const fileAdded = await ipfs.add(fileBuffer);
     const fileCID = fileAdded.path;
     
-    //store on evidence schema
-    const newEvidence = new Evidence({
-        cid: fileCID
-    });
-
-    await newEvidence.save();
+    notifyValidators(fileCID);
 
     res.json({ fileCID, message: "File uploaded to IPFS and data stored in MongoDB successfully!" });
   } catch (error) {
@@ -32,7 +25,7 @@ const uploadToIPFS = async (req, res) => {
   } 
 };
 
-const fetchFromIPFS= async (req, res) => {
+const fetchAndVerifyFromIPFS= async (req, res) => {
     const { cid } = req.params ;  // from the url
 
     if (!cid) {
@@ -49,9 +42,9 @@ const fetchFromIPFS= async (req, res) => {
             return res.status(404).json({ error: "File not found on IPFS" });
         }
 
-        const fileBuffer = Buffer.concat(fileChunks);  // ✅ Keep the file as a Buffer
-        let extractedText = "";
+        const fileBuffer = Buffer.concat(fileChunks);  
 
+        let extractedText = "";
         const pdfData = await pdf(fileBuffer);  // ✅ Extract text from PDF
         extractedText = pdfData.text;
         
@@ -70,7 +63,6 @@ const fetchFromIPFS= async (req, res) => {
 
         return res.status(200).json({
             status: "OK",
-            extractedText: extractedText,
             tokens: tokensAllocated
         });
         
@@ -81,4 +73,4 @@ const fetchFromIPFS= async (req, res) => {
 }
 
 exports.uploadToIPFS=uploadToIPFS;
-exports.fetchFromIPFS=fetchFromIPFS;
+exports.fetchAndVerifyFromIPFS=fetchAndVerifyFromIPFS;

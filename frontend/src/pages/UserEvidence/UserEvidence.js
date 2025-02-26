@@ -67,7 +67,7 @@ const SoilCarbonSequestration = () => {
                 alert("Data Submitted!");
 
                 if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(JSON.stringify({ message: "New soil test report uploaded!", cid: data.cid }));
+                    ws.current.send(JSON.stringify({ message: "New soil test report uploaded!", cid: data.cid }));
                 }
             } else {
                 const error = await response.json();
