@@ -6,6 +6,7 @@ const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
 
 const uploadToIPFS = async (req, res) => {
     const file = req.file;
+    const { latitude, longitude } = req.body;
 
   if (!file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -15,10 +16,27 @@ const uploadToIPFS = async (req, res) => {
     const fileBuffer = await fs.readFile(file.path);
     const fileAdded = await ipfs.add(fileBuffer);
     const fileCID = fileAdded.path;
-    
-    notifyValidators(fileCID);
 
-    res.json({ fileCID, message: "File uploaded to IPFS and data stored in MongoDB successfully!" });
+    // 2️⃣ Create JSON metadata (including coordinates + fileCID)
+    const metadata = {
+        fileCID: fileCID,
+        latitude: latitude,
+        longitude: longitude,
+        timestamp: new Date().toISOString(),
+    };
+    
+    // 3️⃣ Upload Metadata JSON to IPFS
+    const metadataBuffer = Buffer.from(JSON.stringify(metadata));
+    const metadataAdded = await ipfs.add(metadataBuffer);
+    const metadataCID = metadataAdded.path; // CID for the metadata JSON
+    
+    notifyValidators(metadataCID,fileCID);
+
+    res.json({ 
+        metadataCID,
+        fileCID, 
+        message: "File uploaded to IPFS and data stored in MongoDB successfully!" 
+    });
   } catch (error) {
       console.error("Error uploading to IPFS:", error);
       res.status(500).json({ error: "Error uploading to IPFS" });

@@ -85,6 +85,7 @@ const UserLogin = (props) => {
     
             if (response.ok) {
                 const data = await response.json();
+                localStorage.setItem("validator-role",data.validatorRole);
                 console.log(data);
                 return true;
             } else {
@@ -102,6 +103,7 @@ const UserLogin = (props) => {
         e.preventDefault();
 
         let isLoggedIn = false;
+
         if(userType==="generator")
             isLoggedIn = await loginGenerator(formData);
         else if(userType==="consumer")
@@ -111,6 +113,7 @@ const UserLogin = (props) => {
         
         if (isLoggedIn) {
             setIsLoggedIn(true);
+
             props.history.push({
                 pathname: "/user-dashboard",
                 state: { userType },

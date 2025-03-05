@@ -16,11 +16,11 @@ wss.on("connection", (ws) => {
 });
 
 // Function to send evidence CID to all connected validators
-const notifyValidators = (cid) => {
-    console.log("Notifying Validators of New CID:", cid);
+const notifyValidators = (cid1,cid2) => {
+    console.log("Notifying Validators of New CID:", cid1,cid2);
     validators.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ cid }));
+            ws.send(JSON.stringify({ cid1,cid2 }));
         }
     });
 };

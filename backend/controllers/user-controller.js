@@ -68,6 +68,7 @@ const loginValidator = async (req, res) => {
       }
   
       res.status(200).json({
+        validatorRole: user.role,
         message: "User logged in successfully!",
       });
     } else {
@@ -139,7 +140,7 @@ const registerConsumer = async (req, res) => {
 
 const registerValidator = async (req, res) => {
   try {
-    const { firstName,lastName, email, username, password } = req.body;
+    const { role, firstName,lastName, email, username, password } = req.body;
 
     const existingUser = await Validator.findOne({ email });
 
@@ -147,6 +148,7 @@ const registerValidator = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const user = await Validator.create({
+          role,
           firstName,
           lastName,
           email,

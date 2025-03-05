@@ -37,8 +37,6 @@ const App=()=>{
             return <UserEvidence {...props}/>;
           }}
         />
-      
-        <Redirect to="/user-dashboard"></Redirect>
       </Switch>); 
   }else
   {

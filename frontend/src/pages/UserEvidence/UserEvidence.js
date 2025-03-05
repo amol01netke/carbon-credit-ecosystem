@@ -7,22 +7,16 @@ import { useWallet } from "../../context/WalletContext";
 
 const Afforestation=()=>{
     return (
-        <React.Fragment>
-            <h3>Afforestation</h3>
-        </React.Fragment>
+        <div>
+            <h3>Afforestation </h3>
+        </div>
     );
-}
+};
 
-const RenewableEnergy=()=>{
-    return (
-        <React.Fragment>
-            <h3>Renewable Energy</h3>
-        </React.Fragment>
-    );
-}
-
-const SoilCarbonSequestration = () => {
-    const [file, setFile] = useState(null);
+const SoilSequestration = () => {
+    const [latitude, setLatitude]=useState(null);
+    const [longitude, setLongitude]=useState(null);
+    const [report, setReport] = useState(null);
     const [ws, setWs] = useState(null);
 
     useEffect(() => {
@@ -37,23 +31,45 @@ const SoilCarbonSequestration = () => {
         return () => socket.close();
     }, []);
 
+    //fetch co-ordinates
+    const fetchLocation=()=>{
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setLatitude(position.coords.latitude);
+                    setLongitude(position.coords.longitude);
+                },
+                (error) => {
+                    console.error("Error fetching location:", error);
+                    alert("Unable to fetch location. Please allow location access.");
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+    
+    //soil test report
     const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
+        setReport(e.target.files[0]);
     };
 
+    //form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!file) {
+        if (!report) {
             alert("Please select a file to upload.");
             return;
         }
 
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", report);
+        formData.append("latitude",latitude);
+        formData.append("longitude",longitude);
 
         try {
-            const response = await fetch("http://localhost:8000/api/upload-evidence", {
+            const response = await fetch("http://localhost:8000/api/upload-soil-data", {
                 method: "POST",
                 body: formData,
                 headers: {
@@ -80,14 +96,22 @@ const SoilCarbonSequestration = () => {
 
     return (
         <React.Fragment>
-            <h3>Soil Carbon Sequestration</h3>
+            <h3>Soil Sequestration</h3>
             <form onSubmit={handleSubmit} className="soil-form">
-                <br />
-                <label>Upload Soil Test Report</label>
+                {/*GPS*/}
+                <br/>
+                <label>Latitude : {latitude} | Longitude : {longitude}</label>
+                <br/>
+                <button type="button" onClick={fetchLocation}>Fetch Location </button>
+
+                {/*soil test report*/}
+                <br/><br/>
+                <label>Upload Soil Test Report : </label>
                 <br />
                 <input type="file" onChange={handleFileChange} />
-                <br />
-                <br />
+                
+                {/*submit*/}
+                <br /><br/>
                 <button type="submit">Submit</button>
             </form>
         </React.Fragment>
@@ -106,12 +130,8 @@ const UserEvidence=(props)=>{
             Component=Afforestation;
             break;
 
-        case "renewable-energy":
-            Component=RenewableEnergy;
-            break;
-            
-        case "soil-carbon-sequestration":
-            Component=SoilCarbonSequestration;
+        case "soil-sequestration":
+            Component=SoilSequestration;
             break;
             
         default:

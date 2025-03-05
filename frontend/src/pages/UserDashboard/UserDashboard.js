@@ -58,11 +58,10 @@ const GeneratorDashboard=(props)=>{
                 
             {/*evidence upload*/}
             <br/><br/>
-            <h3>Select Carbon Sequestration Method</h3>
+            <h3>Select Sequestration Method</h3>
             <select className="select-project-type" onChange={(e)=>setSequestrationType(e.target.value)}>
                 <option value="afforestation">Afforestation</option>
-                <option value="renewable-energy">Renewable Energy</option>
-                <option value="soil-carbon-sequestration">Soil Carbon Sequestration</option>
+                <option value="soil-sequestration">Soil Sequestration</option>
             </select>  
             <br/>
             <Link 
@@ -176,8 +175,9 @@ const ValidatorDashboard=(props)=>{
     const [validatorAddress,setValidatorAddress]=useState(null); 
     const {generatorAddress}=useWallet();
     const [fetchedCID,setFetchedCID]=useState("");
+    const [reportCID,setReportCID]=useState("");
     const [tokens,setTokens]=useState(0);
-       
+
     //wallet connection
     const handleConnectWallet=async()=>{
         try{
@@ -205,21 +205,33 @@ const ValidatorDashboard=(props)=>{
     }
 
     //verify evidence
-    const verifyEvidence=async()=>{
-        try{
-            const response = await fetch(`http://localhost:8000/api/verify-evidence/${fetchedCID}`, {
-                method: "GET"
-            });
+    // const verifyEvidence=async()=>{
+    //     try{
+    //         const response = await fetch(`http://localhost:8000/api/verify-evidence/${fetchedCID}`, {
+    //             method: "GET"
+    //         });
 
-            if(response.ok){
-                const data = await response.json();
-                console.log(data);
-                setTokens(data.tokens);
-            }
-        } catch(error){
-            console.log(error);
+    //         if(response.ok){
+    //             const data = await response.json();
+    //             console.log(data);
+    //             setTokens(data.tokens);
+    //         }
+    //     } catch(error){
+    //         console.log(error);
+    //     }
+    // }
+
+    const [showIframe, setShowIframe] = useState(false);
+
+    const viewReport = () => {
+        if (reportCID) {
+            setShowIframe(true);
+        } else {
+            alert("No CID available. Please wait for it to load.");
         }
-    }
+    };
+
+    const verifyReportData=async()=>{}
 
     //allocate tokens
     const allocateTokens = async () => {
@@ -230,7 +242,7 @@ const ValidatorDashboard=(props)=>{
             }
 
             const accounts = await web3.eth.getAccounts();
-            const contractAddress = "0xD5BC47e304DeD9e98A15A02610d306a2699Ab325"; // Replace with deployed contract address
+            const contractAddress = "0xDfb0fA24f46465A9D14Ed744369E98D01a08B707"; // Replace with deployed contract address
             const contract = new web3.eth.Contract(AllocateTokens.abi, contractAddress);
 
             // Convert tokens to Ether (1 Token = 0.01 ETH)
@@ -243,7 +255,7 @@ const ValidatorDashboard=(props)=>{
 
             web3.eth.sendTransaction({
                 from: validatorAddress,
-                to: "0x6e6Fa5e57141a86bDE7B15Bd1AecFB1C9305dC3d",
+                to: "0x7e767E1C781aDfd032627d4F8774C8ceFd5C89A3",
                 value: ethAmount // Send 0.01 ETH
             }).then(console.log);
 
@@ -260,6 +272,15 @@ const ValidatorDashboard=(props)=>{
         console.log("Logged out!");
     }
 
+    useEffect(() => {
+        if (reportCID) {
+            const timer = setTimeout(() => {
+                setShowIframe(true);
+            }, 2000); // 2-second delay
+    
+            return () => clearTimeout(timer); // Cleanup timeout when component unmounts
+        }
+    }, [reportCID]);
     //WebSocket for real-time evidence updates
     useEffect(() => {
         const initializeWebSocket = async () => {
@@ -268,7 +289,8 @@ const ValidatorDashboard=(props)=>{
             const socket = new WebSocket("ws://localhost:8080");
             socket.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
-                setFetchedCID(data.cid);
+                setFetchedCID(data.cid1);
+                setReportCID(data.cid2);
                 console.log(data);
             };
             
@@ -282,9 +304,12 @@ const ValidatorDashboard=(props)=>{
         <React.Fragment>
             <div>
                 <h1>VALIDATOR DASHBOARD</h1>
+                {/*role*/}
+                <br/>
+                <h3>Role : {localStorage.getItem("validator-role")}</h3>
                 
                 {/*wallet connection*/}
-                <br/><br/>
+                <br/>
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
@@ -292,14 +317,34 @@ const ValidatorDashboard=(props)=>{
                 {/*fetch evidence - verify evidence*/}
                 <br/><br/>
                 <h3>Fetched CID : {fetchedCID}</h3>
-                <br/>
-                <button onClick={verifyEvidence}>Verify Evidence</button>
                 
-                {/*allocate tokens*/}
+            
+                {/* PDF Viewer for Report Validator */}
+                {localStorage.getItem("validator-role") === "report-validator" && (
+                    <div>
+                        <h3>Submitted Report CID : {reportCID}</h3>
+                        <br/>
+                        {showIframe ? (
+                            <>
+                                <iframe 
+                                    src={`https://ipfs.io/ipfs/${reportCID}`} 
+                                    width="50%" 
+                                    height="400px">
+                                </iframe>
+                                <br/>
+                            </>
+                        ) : (
+                            <p>Loading report...</p> // Show loading message before iframe appears
+                        )}
+                    </div>
+                )}
+                
+                {/*allocate tokens*
                 <br/><br/>
                 <h3>Tokens to allocate : {tokens} </h3>
                 <br/>
                 <button onClick={allocateTokens}>Allocate Tokens</button>
+                    */}
 
                 {/*logout*/}
                 <br/><br/>
