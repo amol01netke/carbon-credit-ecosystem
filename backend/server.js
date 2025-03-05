@@ -17,8 +17,6 @@ const ipfsHandler=require("./handlers/IPFSHandler");
 server.use(bodyParser.json());
 server.use(cors());
 
-//post
-
 //login
 server.post("/api/login-generator", userController.loginGenerator);
 server.post("/api/login-consumer", userController.loginConsumer);
@@ -31,7 +29,6 @@ server.post("/api/register-validator", userController.registerValidator);
 
 //evidence
 server.post("/api/upload-soil-data",upload.single("file"),ipfsHandler.uploadToIPFS);
-server.get("/api/verify-evidence/:cid",ipfsHandler.fetchAndVerifyFromIPFS);
 
 //connect with database and start the server
 mongoose.connect(

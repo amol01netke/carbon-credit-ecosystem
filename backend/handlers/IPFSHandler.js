@@ -13,82 +13,34 @@ const uploadToIPFS = async (req, res) => {
   }
 
   try {
+    //soil report stored on ipfs
     const fileBuffer = await fs.readFile(file.path);
     const fileAdded = await ipfs.add(fileBuffer);
     const fileCID = fileAdded.path;
 
-    // 2️⃣ Create JSON metadata (including coordinates + fileCID)
+    //metadata
     const metadata = {
         fileCID: fileCID,
         latitude: latitude,
         longitude: longitude,
         timestamp: new Date().toISOString(),
     };
-    
-    // 3️⃣ Upload Metadata JSON to IPFS
+
     const metadataBuffer = Buffer.from(JSON.stringify(metadata));
     const metadataAdded = await ipfs.add(metadataBuffer);
-    const metadataCID = metadataAdded.path; // CID for the metadata JSON
+    const metadataCID = metadataAdded.path;
     
-    notifyValidators(metadataCID,fileCID);
+    //notify validators through socket
+    notifyValidators(metadata);
 
+    //response to user evidence 
     res.json({ 
-        metadataCID,
-        fileCID, 
-        message: "File uploaded to IPFS and data stored in MongoDB successfully!" 
+        metadata,
+        message: "Data uploaded to IPFS successfully!" 
     });
   } catch (error) {
-      console.error("Error uploading to IPFS:", error);
       res.status(500).json({ error: "Error uploading to IPFS" });
   } 
 };
 
-const fetchAndVerifyFromIPFS= async (req, res) => {
-    const { cid } = req.params ;  // from the url
-
-    if (!cid) {
-        return res.status(400).json({ error: "CID is required" });
-    }
-    
-    try {
-        const fileChunks = [];
-        for await (const chunk of ipfs.cat(cid)) {
-            fileChunks.push(chunk);
-        }
-
-        if (fileChunks.length === 0) {
-            return res.status(404).json({ error: "File not found on IPFS" });
-        }
-
-        const fileBuffer = Buffer.concat(fileChunks);  
-
-        let extractedText = "";
-        const pdfData = await pdf(fileBuffer);  // ✅ Extract text from PDF
-        extractedText = pdfData.text;
-        
-        let tokensAllocated=0;
-        const carbonMatch = extractedText.match(/Carbon Sequestration Potential:\s*([\d.]+)\s*Tons CO2\/ha/i);
-        if (carbonMatch) {
-            const carbonSequestration = parseFloat(carbonMatch[1]);
-            if (carbonSequestration >= 5) {
-                tokensAllocated += 100;
-            } else if (carbonSequestration >= 3) {
-                tokensAllocated += 50;
-            } else {
-                tokensAllocated += 20;
-            }
-        }
-
-        return res.status(200).json({
-            status: "OK",
-            tokens: tokensAllocated
-        });
-        
-    } catch (error) {
-        console.error("Error fetching from IPFS:", error);
-        res.status(500).json({ error: "Error fetching file from IPFS" });
-    }
-}
-
 exports.uploadToIPFS=uploadToIPFS;
-exports.fetchAndVerifyFromIPFS=fetchAndVerifyFromIPFS;

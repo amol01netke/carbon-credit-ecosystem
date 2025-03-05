@@ -79,12 +79,7 @@ const SoilSequestration = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Response:", data);
-                alert("Data Submitted!");
-
-                if (ws && ws.readyState === WebSocket.OPEN) {
-                    ws.current.send(JSON.stringify({ message: "New soil test report uploaded!", cid: data.cid }));
-                }
+                console.log("Response : ", data);
             } else {
                 const error = await response.json();
                 console.error("Error:", error);

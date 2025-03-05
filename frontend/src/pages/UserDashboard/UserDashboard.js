@@ -5,7 +5,6 @@ import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import {useWallet} from "../../context/WalletContext";
-import AllocateTokens from "../../abis/AllocateTokens.json";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -174,10 +173,13 @@ const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null); 
     const {generatorAddress}=useWallet();
-    const [fetchedCID,setFetchedCID]=useState("");
+    
+    //returend data
     const [reportCID,setReportCID]=useState("");
-    const [tokens,setTokens]=useState(0);
-
+    const [latitude,setLatitude]=useState("");
+    const [longitude,setLongitude]=useState("");
+    const [showIframe, setShowIframe] = useState(false);
+    
     //wallet connection
     const handleConnectWallet=async()=>{
         try{
@@ -204,66 +206,11 @@ const ValidatorDashboard=(props)=>{
         } 
     }
 
-    //verify evidence
-    // const verifyEvidence=async()=>{
-    //     try{
-    //         const response = await fetch(`http://localhost:8000/api/verify-evidence/${fetchedCID}`, {
-    //             method: "GET"
-    //         });
-
-    //         if(response.ok){
-    //             const data = await response.json();
-    //             console.log(data);
-    //             setTokens(data.tokens);
-    //         }
-    //     } catch(error){
-    //         console.log(error);
-    //     }
-    // }
-
-    const [showIframe, setShowIframe] = useState(false);
-
-    const viewReport = () => {
-        if (reportCID) {
+    //view evidence
+    const viewEvidence =async () => {
+        setTimeout(() => {
             setShowIframe(true);
-        } else {
-            alert("No CID available. Please wait for it to load.");
-        }
-    };
-
-    const verifyReportData=async()=>{}
-
-    //allocate tokens
-    const allocateTokens = async () => {
-        try {
-            if (!web3) {
-                console.error("Web3 is not initialized! Connect wallet first.");
-                return;
-            }
-
-            const accounts = await web3.eth.getAccounts();
-            const contractAddress = "0xDfb0fA24f46465A9D14Ed744369E98D01a08B707"; // Replace with deployed contract address
-            const contract = new web3.eth.Contract(AllocateTokens.abi, contractAddress);
-
-            // Convert tokens to Ether (1 Token = 0.01 ETH)
-            const ethAmount = web3.utils.toWei((tokens * 0.01).toString(), "ether");
-
-            // Call Smart Contract function with Ether transfer
-            // await contract.methods
-            //     .approveAndTransferEther(fetchedCID, "0x6e6Fa5e57141a86bDE7B15Bd1AecFB1C9305dC3d", tokens)
-            //     .send({ from: accounts[0], value: ethAmount });
-
-            web3.eth.sendTransaction({
-                from: validatorAddress,
-                to: "0x7e767E1C781aDfd032627d4F8774C8ceFd5C89A3",
-                value: ethAmount // Send 0.01 ETH
-            }).then(console.log);
-
-            console.log(`Successfully transferred ${ethAmount} ETH to ${generatorAddress}!`);
-
-        } catch (error) {
-            console.error("Smart Contract Execution Failed:", error);
-        }
+        }, 2000);
     };
 
     //logout
@@ -273,25 +220,19 @@ const ValidatorDashboard=(props)=>{
     }
 
     useEffect(() => {
-        if (reportCID) {
-            const timer = setTimeout(() => {
-                setShowIframe(true);
-            }, 2000); // 2-second delay
-    
-            return () => clearTimeout(timer); // Cleanup timeout when component unmounts
-        }
-    }, [reportCID]);
-    //WebSocket for real-time evidence updates
-    useEffect(() => {
         const initializeWebSocket = async () => {
             await handleConnectWallet();
 
             const socket = new WebSocket("ws://localhost:8080");
             socket.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
-                setFetchedCID(data.cid1);
-                setReportCID(data.cid2);
                 console.log(data);
+                
+                console.log(data.metadata.fileCID,data.metadata.latitude,data.metadata.longitude);
+
+                setReportCID(data.metadata.fileCID);
+                setLatitude(data.metadata.latitude);
+                setLongitude(data.metadata.longitude);
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
@@ -313,39 +254,64 @@ const ValidatorDashboard=(props)=>{
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
-            
-                {/*fetch evidence - verify evidence*/}
-                <br/><br/>
-                <h3>Fetched CID : {fetchedCID}</h3>
                 
-            
-                {/* PDF Viewer for Report Validator */}
+                {/*gps validator*/}
+                {localStorage.getItem("validator-role") === "gps-validator" && (
+                    <div>
+                        <button onClick={viewEvidence}>Satellite View</button>
+                        <br/><br/>
+                        {showIframe ? 
+                        (
+                            <>
+                                <iframe    
+                                src={`
+                                    https://www.bing.com/maps/embed?h=400&w=500&cp=${latitude}~${longitude}&lvl=15&sty=a&typ=d&FORM=MBEDV8`}
+                                width="50%" 
+                                height="400px">
+                                </iframe>
+                            </>
+                        ) : 
+                        (
+                            <>
+                                <iframe 
+                                    width="50%" 
+                                    height="400px">
+                                </iframe>
+                            </>
+                        )}
+                        <br/>
+                        <button>Verify </button>
+                    </div>
+                )}
+                
+                {/*report validator*/}
                 {localStorage.getItem("validator-role") === "report-validator" && (
                     <div>
-                        <h3>Submitted Report CID : {reportCID}</h3>
-                        <br/>
-                        {showIframe ? (
+                        <button onClick={viewEvidence}>View Report</button>
+                        <br/><br/>
+                        {showIframe ? 
+                        (
                             <>
                                 <iframe 
                                     src={`https://ipfs.io/ipfs/${reportCID}`} 
                                     width="50%" 
                                     height="400px">
                                 </iframe>
-                                <br/>
                             </>
-                        ) : (
-                            <p>Loading report...</p> // Show loading message before iframe appears
+                        ) :
+                        (
+                            <>
+                                <iframe 
+                                    width="50%" 
+                                    height="400px">
+                                </iframe>
+                            </>
                         )}
+                        <br/>
+                        <button>Verify</button>
                     </div>
                 )}
                 
-                {/*allocate tokens*
-                <br/><br/>
-                <h3>Tokens to allocate : {tokens} </h3>
-                <br/>
-                <button onClick={allocateTokens}>Allocate Tokens</button>
-                    */}
-
                 {/*logout*/}
                 <br/><br/>
                 <button onClick={handleLogout}>Logout</button>
