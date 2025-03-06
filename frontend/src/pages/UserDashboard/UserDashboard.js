@@ -172,12 +172,8 @@ const GeneratorDashboard=(props)=>{
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null); 
-    const {generatorAddress}=useWallet();
-    
-    //returend data
+    const [evidenceType, setEvidenceType]=useState(""); 
     const [reportCID,setReportCID]=useState("");
-    const [latitude,setLatitude]=useState("");
-    const [longitude,setLongitude]=useState("");
     const [showIframe, setShowIframe] = useState(false);
     
     //wallet connection
@@ -206,13 +202,28 @@ const ValidatorDashboard=(props)=>{
         } 
     }
 
-    //view evidence
-    const viewEvidence =async () => {
+    //view soil evidence
+    const viewSoilEvidence =async () => {
         setTimeout(() => {
             setShowIframe(true);
         }, 2000);
     };
 
+    //verify soil evidence
+    const verifySoilEvidence=async()=>{
+
+    }
+
+    //view afforestation evidence
+    const viewAfforestationEvidence=()=>{
+
+    }
+
+    //verify afforestation evidence
+    const verifyAfforestationEvidence=async()=>{
+
+    }
+    
     //logout
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
@@ -227,12 +238,13 @@ const ValidatorDashboard=(props)=>{
             socket.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
                 console.log(data);
-                
-                console.log(data.metadata.fileCID,data.metadata.latitude,data.metadata.longitude);
-
-                setReportCID(data.metadata.fileCID);
-                setLatitude(data.metadata.latitude);
-                setLongitude(data.metadata.longitude);
+                setEvidenceType(data.evidenceType);
+                if(data.evidenceType==="afforestation"){
+                    
+                }
+                else if(data.evidenceType==="soil"){
+                    setReportCID(data.cid);
+                }
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
@@ -240,54 +252,24 @@ const ValidatorDashboard=(props)=>{
         initializeWebSocket();
     }, []);
 
-
     return (
         <React.Fragment>
             <div>
                 <h1>VALIDATOR DASHBOARD</h1>
-                {/*role*/}
-                <br/>
-                <h3>Role : {localStorage.getItem("validator-role")}</h3>
-                
                 {/*wallet connection*/}
                 <br/>
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
                 
-                {/*gps validator*/}
-                {localStorage.getItem("validator-role") === "gps-validator" && (
+                {/*evidence cid*/}
+                <br/>
+                <h3>CID : {reportCID}</h3>
+
+                {/*soil evidence  */}               
+                {evidenceType==="soil" && (
                     <div>
-                        <button onClick={viewEvidence}>Satellite View</button>
-                        <br/><br/>
-                        {showIframe ? 
-                        (
-                            <>
-                                <iframe    
-                                src={`
-                                    https://www.bing.com/maps/embed?h=400&w=500&cp=${latitude}~${longitude}&lvl=15&sty=a&typ=d&FORM=MBEDV8`}
-                                width="50%" 
-                                height="400px">
-                                </iframe>
-                            </>
-                        ) : 
-                        (
-                            <>
-                                <iframe 
-                                    width="50%" 
-                                    height="400px">
-                                </iframe>
-                            </>
-                        )}
-                        <br/>
-                        <button>Verify </button>
-                    </div>
-                )}
-                
-                {/*report validator*/}
-                {localStorage.getItem("validator-role") === "report-validator" && (
-                    <div>
-                        <button onClick={viewEvidence}>View Report</button>
+                        <button onClick={viewSoilEvidence}>View Evidence</button>
                         <br/><br/>
                         {showIframe ? 
                         (
@@ -295,7 +277,7 @@ const ValidatorDashboard=(props)=>{
                                 <iframe 
                                     src={`https://ipfs.io/ipfs/${reportCID}`} 
                                     width="50%" 
-                                    height="400px">
+                                    height="300px">
                                 </iframe>
                             </>
                         ) :
@@ -303,12 +285,31 @@ const ValidatorDashboard=(props)=>{
                             <>
                                 <iframe 
                                     width="50%" 
-                                    height="400px">
+                                    height="300px">
                                 </iframe>
                             </>
                         )}
                         <br/>
-                        <button>Verify</button>
+                        <button onClick={verifySoilEvidence}>Verify</button>
+                    </div>
+                )}
+                
+                {/*soil evidence  */}               
+                {evidenceType==="afforestation" && (
+                    <div>
+                        <button onClick={viewAfforestationEvidence}>View Evidence</button>
+                        <br/><br/>
+                        {showIframe ? 
+                        (
+                            <>
+                            </>
+                        ) :
+                        (
+                            <>
+                            </>
+                        )}
+                        <br/>
+                        <button onClick={verifyAfforestationEvidence}>Verify</button>
                     </div>
                 )}
                 

@@ -28,7 +28,8 @@ server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
 
 //evidence
-server.post("/api/upload-soil-data",upload.single("file"),ipfsHandler.uploadToIPFS);
+server.post("/api/upload-soil-evidence",upload.single("file"),ipfsHandler.uploadSoilEvidence);
+server.post("/api/upload-afforestation-evidence",ipfsHandler.uploadAfforestationEvidence);
 
 //connect with database and start the server
 mongoose.connect(

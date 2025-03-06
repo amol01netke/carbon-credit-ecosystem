@@ -13,11 +13,11 @@ wss.on("connection", (ws) => {
     });
 });
 
-const notifyValidators = (metadata) => {
-    console.log("Notifying Validators : ",metadata);
+const notifyValidators = (cid,evidenceType) => {
+    console.log("Notifying Validators : ",cid,evidenceType);
     validators.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ metadata }));
+            ws.send(JSON.stringify({ cid , evidenceType}));
         }
     });
 };

@@ -271,7 +271,6 @@ const ConsumerRegistration = (props,{setIsLoggedIn,userType}) => {
 
 const ValidatorRegistration = (props,{setIsLoggedIn,userType}) => {
     const [formData, setFormData] = useState({
-        role:"gps-validator",
         firstName:"",
         lastName:"",
         email: "",
@@ -283,7 +282,6 @@ const ValidatorRegistration = (props,{setIsLoggedIn,userType}) => {
         const { name, value } = e.target;
         setFormData((prevData) => {
             const updatedData = { ...prevData, [name]: value };
-            //console.log(updatedData.role); // ✅ Correct role printed
             return updatedData;
         });
     };
@@ -309,11 +307,6 @@ const ValidatorRegistration = (props,{setIsLoggedIn,userType}) => {
         <React.Fragment>
             <form className="registration-form" onSubmit={handleSubmit}>
                 <h1>{props.userType} REGISTRATION</h1>
-                <select className="role" name="role" value={formData.role} onChange={handleChange} required>
-                    <option value="gps-validator">GPS Validator</option>       
-                    <option value="report-validator">Report Validator</option>       
-                </select>
-
                 <div className="name-ip">
                     <input
                         className="form-ip"

@@ -85,7 +85,6 @@ const UserLogin = (props) => {
     
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem("validator-role",data.validatorRole);
                 console.log(data);
                 return true;
             } else {
