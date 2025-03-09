@@ -173,8 +173,11 @@ const GeneratorDashboard=(props)=>{
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null); 
+    
     const [evidenceType, setEvidenceType]=useState(""); 
-    const [reportCID,setReportCID]=useState("");    
+    const [reportCID,setReportCID]=useState("");   
+    const [metadataCID, setMetadataCID]=useState("");
+    
     const [showIframe, setShowIframe] = useState(false);
     const [VerificationStatus, setVerificationStatus]=useState("Not Verified");
     const [isEvidenceVerified, setIsEvidenceVerified]=useState(false);
@@ -240,42 +243,6 @@ const ValidatorDashboard=(props)=>{
         }
     }   
 
-    //fund contract
-    const fundContract = async () => {
-        try {
-            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-            const validatorAddress = accounts[0]; // Validator's address
-            const contractAddress = "0x575b6c422Cf18c3ab988b62C969C0854d8F4b10D"; // Contract address
-            const amountToSend = web3.utils.toWei('1', 'ether'); // Fund the contract with 5 ETH
-    
-            // Get and log the balance of the validator before the transaction
-            const validatorBalanceBefore = await web3.eth.getBalance(validatorAddress);
-            console.log("Validator balance before funding:", web3.utils.fromWei(validatorBalanceBefore, "ether"), "ETH");
-    
-            // Get and log the balance of the contract before the transaction
-            const contractBalanceBefore = await web3.eth.getBalance(contractAddress);
-            console.log("Contract balance before funding:", web3.utils.fromWei(contractBalanceBefore, "ether"), "ETH");
-    
-            // Send ETH to the contract to fund it
-            await web3.eth.sendTransaction({
-                from: validatorAddress,
-                to: contractAddress,
-                value: amountToSend
-            });
-    
-            // Get and log the balance of the validator after the transaction
-            const validatorBalanceAfter = await web3.eth.getBalance(validatorAddress);
-            console.log("Validator balance after funding:", web3.utils.fromWei(validatorBalanceAfter, "ether"), "ETH");
-    
-            // Get and log the balance of the contract after the transaction
-            const contractBalanceAfter = await web3.eth.getBalance(contractAddress);
-            console.log("Contract balance after funding:", web3.utils.fromWei(contractBalanceAfter, "ether"), "ETH");
-    
-        } catch (error) {
-            console.error("Error funding contract:", error);
-        }
-    };
-
     //approve soil evidence
     const approveSoilEvidence = async () => {
         try {
@@ -283,11 +250,12 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x575b6c422Cf18c3ab988b62C969C0854d8F4b10D");
-            await contract.methods.voteToApprove("0xb569b633c55c1de66A817904A2dCA2c2BdB60169", 0)
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x8CAdDD64dF86575AE3e87290e196c938c4672F58");
+            await contract.methods.voteToApprove("0xF7e95527Ff293369e7851967C0D2B81208d9DcAB", sequestrationTons)
                 .send({ from: validatorAddress});
     
-            console.log("Evidence approved and ETH sent!");
+         
+                console.log("Evidence approved and ETH sent!");
         } catch (error) {
             console.error("Error approving evidence:", error);
         }
@@ -386,8 +354,6 @@ const ValidatorDashboard=(props)=>{
                             <>
                                 <p>Sequestration Tons: {sequestrationTons}</p>
                                 <p>Approval Status : {approvalStatus}</p>
-                                <button onClick={fundContract}>Fund Contract</button>
-                                <br/>
                                 <button onClick={approveSoilEvidence}>Approve</button> 
                                 <span>{" "}</span>
                                 <button onClick={approveSoilEvidence}>Reject</button>

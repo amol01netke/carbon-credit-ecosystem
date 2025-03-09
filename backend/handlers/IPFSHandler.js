@@ -51,8 +51,11 @@ const verifySoilEvidence=async(req,res)=>{
     }
     
     /** PYTHON SCRIPT TO VERIFY AND CALCULATE SEQUESTRATION AMOUNT */
+
     try {
         
+
+        //response
         res.json({
             status:"verified",
             sequestrationTons:"5",
