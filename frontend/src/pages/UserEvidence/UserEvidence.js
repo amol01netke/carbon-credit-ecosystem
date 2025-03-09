@@ -116,7 +116,7 @@ const SoilSequestration = () => {
             <form onSubmit={handleSubmit} className="soil-form">
                 {/*soil test report*/}
                 <br/>
-                <label>Upload Soil Test Report : </label>
+                <label>Upload Soil Test Report</label>
                 <br />
                 <input type="file" onChange={handleFileChange} />
                 <br/>

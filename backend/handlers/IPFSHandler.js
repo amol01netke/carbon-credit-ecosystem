@@ -43,5 +43,25 @@ const uploadSoilEvidence = async (req, res) => {
     } 
 };
 
+const verifySoilEvidence=async(req,res)=>{
+    const { reportCID } = req.body;
+
+    if (!reportCID) {
+            return res.status(400).json({ error: "Missing reportCID" });
+    }
+    
+    /** PYTHON SCRIPT TO VERIFY AND CALCULATE SEQUESTRATION AMOUNT */
+    try {
+        
+        res.json({
+            status:"verified",
+            sequestrationTons:"5",
+        });
+    }catch(error){
+        console.log("ERROR : ",error);
+    }
+};
+
 exports.uploadSoilEvidence=uploadSoilEvidence;
 exports.uploadAfforestationEvidence=uploadAfforestationEvidence;
+exports.verifySoilEvidence=verifySoilEvidence;

@@ -5,6 +5,7 @@ import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import {useWallet} from "../../context/WalletContext";
+import MultiValidatorABI from "../../../src/abis/MutliValidator.json";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -173,8 +174,12 @@ const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null); 
     const [evidenceType, setEvidenceType]=useState(""); 
-    const [reportCID,setReportCID]=useState("");
+    const [reportCID,setReportCID]=useState("");    
     const [showIframe, setShowIframe] = useState(false);
+    const [VerificationStatus, setVerificationStatus]=useState("Not Verified");
+    const [isEvidenceVerified, setIsEvidenceVerified]=useState(false);
+    const [sequestrationTons, setSequestrationTons]=useState("");
+    const [approvalStatus, setApprovalStatus] = useState("Not Approved");
     
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -211,8 +216,83 @@ const ValidatorDashboard=(props)=>{
 
     //verify soil evidence
     const verifySoilEvidence=async()=>{
+        try{
+            const response = await fetch("http://localhost:8000/api/verify-soil-evidence",{
+                method:"POST",
+                headers: {
+                    "content-Type": "application/json"
+                },
+                body: JSON.stringify({ reportCID }) 
+            });
 
-    }
+            if(response.ok){
+                const data = await response.json();
+                console.log(data);
+
+                if(data.status==="verified"){
+                    setIsEvidenceVerified(true);
+                    setVerificationStatus(data.status);
+                    setSequestrationTons(data.sequestrationTons);
+                }
+            }
+        }catch(error){
+            console.log("Error : ",error);
+        }
+    }   
+
+    //fund contract
+    const fundContract = async () => {
+        try {
+            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            const validatorAddress = accounts[0]; // Validator's address
+            const contractAddress = "0x575b6c422Cf18c3ab988b62C969C0854d8F4b10D"; // Contract address
+            const amountToSend = web3.utils.toWei('1', 'ether'); // Fund the contract with 5 ETH
+    
+            // Get and log the balance of the validator before the transaction
+            const validatorBalanceBefore = await web3.eth.getBalance(validatorAddress);
+            console.log("Validator balance before funding:", web3.utils.fromWei(validatorBalanceBefore, "ether"), "ETH");
+    
+            // Get and log the balance of the contract before the transaction
+            const contractBalanceBefore = await web3.eth.getBalance(contractAddress);
+            console.log("Contract balance before funding:", web3.utils.fromWei(contractBalanceBefore, "ether"), "ETH");
+    
+            // Send ETH to the contract to fund it
+            await web3.eth.sendTransaction({
+                from: validatorAddress,
+                to: contractAddress,
+                value: amountToSend
+            });
+    
+            // Get and log the balance of the validator after the transaction
+            const validatorBalanceAfter = await web3.eth.getBalance(validatorAddress);
+            console.log("Validator balance after funding:", web3.utils.fromWei(validatorBalanceAfter, "ether"), "ETH");
+    
+            // Get and log the balance of the contract after the transaction
+            const contractBalanceAfter = await web3.eth.getBalance(contractAddress);
+            console.log("Contract balance after funding:", web3.utils.fromWei(contractBalanceAfter, "ether"), "ETH");
+    
+        } catch (error) {
+            console.error("Error funding contract:", error);
+        }
+    };
+
+    //approve soil evidence
+    const approveSoilEvidence = async () => {
+        try {
+            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            const validatorAddress = accounts[0];
+            console.log(validatorAddress);
+    
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x575b6c422Cf18c3ab988b62C969C0854d8F4b10D");
+            await contract.methods.voteToApprove("0xb569b633c55c1de66A817904A2dCA2c2BdB60169", 0)
+                .send({ from: validatorAddress});
+    
+            console.log("Evidence approved and ETH sent!");
+        } catch (error) {
+            console.error("Error approving evidence:", error);
+        }
+    };
+    
 
     //view afforestation evidence
     const viewAfforestationEvidence=()=>{
@@ -261,16 +341,20 @@ const ValidatorDashboard=(props)=>{
                 <button onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
-                
-                {/*evidence cid*/}
-                <br/>
-                <h3>CID : {reportCID}</h3>
 
                 {/*soil evidence  */}               
                 {evidenceType==="soil" && (
-                    <div>
+                    <div className="soil-evidence-section">
+                        {/*disply evidence details*/}
+                        <br/>
+                        <p>Uploader : {}</p>
+                        <p>Evidence Type : {evidenceType}</p>
+                        <p>Evidence CID : {reportCID}</p>
+                        
+                        {/*view evidence*/}
+                        <br/>
                         <button onClick={viewSoilEvidence}>View Evidence</button>
-                        <br/><br/>
+                        <br/>
                         {showIframe ? 
                         (
                             <>
@@ -289,12 +373,30 @@ const ValidatorDashboard=(props)=>{
                                 </iframe>
                             </>
                         )}
+
+                        {/*verify evidence*/}
                         <br/>
-                        <button onClick={verifySoilEvidence}>Verify</button>
+                        <p>Verification Status : {VerificationStatus}</p>
+                        <button onClick={verifySoilEvidence}>Verify Evidence</button>
+
+                        
+                        {/**token Allocation */}
+                        <br/><br/>
+                        {isEvidenceVerified && (
+                            <>
+                                <p>Sequestration Tons: {sequestrationTons}</p>
+                                <p>Approval Status : {approvalStatus}</p>
+                                <button onClick={fundContract}>Fund Contract</button>
+                                <br/>
+                                <button onClick={approveSoilEvidence}>Approve</button> 
+                                <span>{" "}</span>
+                                <button onClick={approveSoilEvidence}>Reject</button>
+                            </>
+                        )}
                     </div>
                 )}
                 
-                {/*soil evidence  */}               
+                {/*afforestation evidence  */}               
                 {evidenceType==="afforestation" && (
                     <div>
                         <button onClick={viewAfforestationEvidence}>View Evidence</button>
@@ -314,7 +416,7 @@ const ValidatorDashboard=(props)=>{
                 )}
                 
                 {/*logout*/}
-                <br/><br/>
+                <br/>
                 <button onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
