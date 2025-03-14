@@ -6,7 +6,7 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     const validatorAddress = accounts[0]; // Validator address
-    const initialFunding = web3.utils.toWei("10", "ether"); // 10 ETH for contract
+    const initialFunding = web3.utils.toWei("50", "ether"); // 10 ETH for contract
 
     console.log("Deploying MultiValidator...");
     console.log(`Validator: ${validatorAddress}`);

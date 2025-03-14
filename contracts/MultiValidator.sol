@@ -5,7 +5,8 @@ contract MultiValidator {
     address public owner; // Validator
     address payable public receiver; // Generator    
     uint256 public creditAmount; // Hold credits
-
+    uint256 public count;
+    
     constructor(address _validator) payable {
         require(_validator != address(0), "Validator address cannot be zero");
         owner = _validator;

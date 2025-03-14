@@ -5,7 +5,6 @@ import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import {useWallet} from "../../context/WalletContext";
-import MultiValidatorABI from "../../../src/abis/MutliValidator.json";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -172,17 +171,15 @@ const GeneratorDashboard=(props)=>{
 
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
-    const [validatorAddress,setValidatorAddress]=useState(null); 
-    
+    const [validatorAddress,setValidatorAddress]=useState(null);  
     const [evidenceType, setEvidenceType]=useState(""); 
     const [reportCID,setReportCID]=useState("");   
-    const [metadataCID, setMetadataCID]=useState("");
-    
+    const [metadataCID, setMetadataCID]=useState(""); // afforestation
     const [showIframe, setShowIframe] = useState(false);
-    const [VerificationStatus, setVerificationStatus]=useState("Not Verified");
-    const [isEvidenceVerified, setIsEvidenceVerified]=useState(false);
-    const [sequestrationTons, setSequestrationTons]=useState("");
-    const [approvalStatus, setApprovalStatus] = useState("Not Approved");
+    const [verificationStatus, setVerificationStatus]=useState("not verified");
+    const [co2Sequestration, setCO2Sequestration]=useState("0");
+    const [approvalCount, setApprovalCount] = useState("0");
+    const [transaction,viewTransaction]=useState("null");
     
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -217,15 +214,18 @@ const ValidatorDashboard=(props)=>{
         }, 2000);
     };
 
-    //verify soil evidence
-    const verifySoilEvidence=async()=>{
+    //process soil evidence
+    const processSoilEvidence=async()=>{
         try{
-            const response = await fetch("http://localhost:8000/api/verify-soil-evidence",{
+            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            const validatorAddress = accounts[0];
+
+            const response = await fetch("http://localhost:8000/api/process-soil-evidence",{
                 method:"POST",
                 headers: {
                     "content-Type": "application/json"
                 },
-                body: JSON.stringify({ reportCID }) 
+                body: JSON.stringify({ reportCID, validatorAddress }) 
             });
 
             if(response.ok){
@@ -233,9 +233,10 @@ const ValidatorDashboard=(props)=>{
                 console.log(data);
 
                 if(data.status==="verified"){
-                    setIsEvidenceVerified(true);
                     setVerificationStatus(data.status);
-                    setSequestrationTons(data.sequestrationTons);
+                    setCO2Sequestration(data.sequestrationTons);
+                    setApprovalCount(data.approvalCount);
+                    setTransaction(data.transactionHash);
                 }
             }
         }catch(error){
@@ -244,22 +245,22 @@ const ValidatorDashboard=(props)=>{
     }   
 
     //approve soil evidence
-    const approveSoilEvidence = async () => {
-        try {
-            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-            const validatorAddress = accounts[0];
-            console.log(validatorAddress);
+    // const approveSoilEvidence = async () => {
+    //     try {
+    //         const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    //         const validatorAddress = accounts[0];
+    //         console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x8CAdDD64dF86575AE3e87290e196c938c4672F58");
-            await contract.methods.voteToApprove("0xF7e95527Ff293369e7851967C0D2B81208d9DcAB", sequestrationTons)
-                .send({ from: validatorAddress});
+    //         const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x3C132BDE7591ef0FB83E870d9dbAFbC7e5008A42");
+    //         await contract.methods.voteToApprove("0x087DBDA1cC3269F1c17e0e390f2e18CDDE34DdCB", co2Sequestration)
+    //             .send({ from: validatorAddress});
     
          
-                console.log("Evidence approved and ETH sent!");
-        } catch (error) {
-            console.error("Error approving evidence:", error);
-        }
-    };
+    //             console.log("Evidence approved and ETH sent!");
+    //     } catch (error) {
+    //         console.error("Error approving evidence:", error);
+    //     }
+    // };
     
 
     //view afforestation evidence
@@ -321,7 +322,7 @@ const ValidatorDashboard=(props)=>{
                         
                         {/*view evidence*/}
                         <br/>
-                        <button onClick={viewSoilEvidence}>View Evidence</button>
+                        <button onClick={viewSoilEvidence}>View Soil Evidence</button>
                         <br/>
                         {showIframe ? 
                         (
@@ -342,23 +343,17 @@ const ValidatorDashboard=(props)=>{
                             </>
                         )}
 
-                        {/*verify evidence*/}
+                        {/** soil evidence processing*/}
                         <br/>
-                        <p>Verification Status : {VerificationStatus}</p>
-                        <button onClick={verifySoilEvidence}>Verify Evidence</button>
-
-                        
-                        {/**token Allocation */}
+                        <button onClick={processSoilEvidence}>Process Soil Evidence</button>
                         <br/><br/>
-                        {isEvidenceVerified && (
-                            <>
-                                <p>Sequestration Tons: {sequestrationTons}</p>
-                                <p>Approval Status : {approvalStatus}</p>
-                                <button onClick={approveSoilEvidence}>Approve</button> 
-                                <span>{" "}</span>
-                                <button onClick={approveSoilEvidence}>Reject</button>
-                            </>
-                        )}
+                        <p>Verification Status : {verificationStatus}</p>
+                        <p>CO<sub>2</sub> Sequestration : {co2Sequestration} tons</p>
+                        <p>Approval Count : {approvalCount}/2</p>
+                        <button>View Transaction</button>
+                        
+                        {/*<button onClick={approveSoilEvidence}>Approve</button>*/}
+
                     </div>
                 )}
                 

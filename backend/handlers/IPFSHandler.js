@@ -2,6 +2,8 @@ const ipfsClient = require('ipfs-http-client');
 const fs = require('fs/promises');
 const { notifyValidators } = require('../websocket.js'); // Import WebSocket function
 const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
+const Web3=require('web3');
+const contractABI=require("./abis/MultiValidatorABI.json");
 
 const uploadAfforestationEvidence=async(req,res)=>{
     try {
@@ -43,28 +45,56 @@ const uploadSoilEvidence = async (req, res) => {
     } 
 };
 
-const verifySoilEvidence=async(req,res)=>{
+const processSoilEvidence=async(req,res)=>{
     const { reportCID } = req.body;
 
     if (!reportCID) {
-            return res.status(400).json({ error: "Missing reportCID" });
+        return res.status(400).json({ error: "Missing reportCID" });
     }
     
-    /** PYTHON SCRIPT TO VERIFY AND CALCULATE SEQUESTRATION AMOUNT */
+    let sequestrationAmount=0;
+    let approvalCount=0;
+    let transactionHash=null;
 
     try {
-        
+        //calculate sequestration
+        sequestrationAmount=5;
+
+        //increase count
+        approvalCount++;
+
+        //call method
+        if(approvalCount==2){
+            const contract = new Web3.eth.Contract(contractABI.abi, contractAddress);
+
+            transactionHash = await contract.methods
+                .voteToApprove(reportCID, sequestrationAmount)
+                .send({
+                    from: validatorAddress,
+                    gas: 300000,
+                });
+
+            approvalCount = 0;
+        }
+
 
         //response
         res.json({
             status:"verified",
-            sequestrationTons:"5",
+            sequestrationAmount,
+            approvalCount,
+            transactionHash
         });
     }catch(error){
         console.log("ERROR : ",error);
     }
 };
 
+const processAfforestationEvidence=async(req,res)=>{
+
+};
+
 exports.uploadSoilEvidence=uploadSoilEvidence;
 exports.uploadAfforestationEvidence=uploadAfforestationEvidence;
-exports.verifySoilEvidence=verifySoilEvidence;
+exports.processSoilEvidence=processSoilEvidence;
+exports.processAfforestationEvidence=processAfforestationEvidence;
