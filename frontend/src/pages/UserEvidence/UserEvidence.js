@@ -112,8 +112,7 @@ const SoilSequestration = () => {
 
     return (
         <React.Fragment>
-            <h3>Soil Sequestration</h3>
-            <form onSubmit={handleSubmit} className="soil-form">
+           <form onSubmit={handleSubmit} className="soil-form">
                 {/*soil test report*/}
                 <br/>
                 <label>Upload Soil Test Report</label>

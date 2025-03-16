@@ -32,8 +32,8 @@ server.post("/api/upload-soil-evidence",upload.single("file"),ipfsHandler.upload
 server.post("/api/upload-afforestation-evidence",ipfsHandler.uploadAfforestationEvidence);
 
 //verify evidence
-server.post("/api/process-soil-evidence",ipfsHandler.processSoilEvidence);
-server.post("/api/process-afforestation-evidence",ipfsHandler.processAfforestationEvidence);
+server.post("/api/verify-soil-evidence",ipfsHandler.verifySoilEvidence);
+server.post("/api/verify-afforestation-evidence",ipfsHandler.verifyAfforestationEvidence);
 
 //connect with database and start the server
 mongoose.connect(
