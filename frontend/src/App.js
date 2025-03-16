@@ -10,7 +10,6 @@ import React from "react";
 import { useState } from "react";
 import UserSelection from "./pages/UserSelection/UserSelection";
 import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
-import UserEvidence from "./pages/UserEvidence/UserEvidence";
 import {WalletProvider} from "./context/WalletContext";
 
 const App=()=>{
@@ -30,13 +29,6 @@ const App=()=>{
           }}
         />
 
-        <Route 
-          path="/user-evidence" 
-          exact 
-          render={(props)=>{
-            return <UserEvidence {...props}/>;
-          }}
-        />
       </Switch>); 
   }else
   {

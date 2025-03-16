@@ -5,6 +5,7 @@ import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import {useWallet} from "../../context/WalletContext";
 import MultiValidatorABI from "../../abis/MutliValidator.json"
+import MintTokensABI from "../../abis/MintTokens.json";
 
 const Afforestation=()=>{
     const [latitude, setLatitude]=useState(null);
@@ -133,6 +134,7 @@ const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const {generatorAddress,setGeneratorAddress}=useWallet();
     const [sequestrationType,setSequestrationType]=useState("select");
+    const [tokensReceived, setTokensReceived]=useState(0);
 
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -166,6 +168,29 @@ const GeneratorDashboard=(props)=>{
         console.log(`Logged out!`);
     }
     
+    // Fetch Carbon Tokens Received
+    const fetchTokensReceived = async (web3Instance, address) => {
+        try {
+            const mintContract = new web3Instance.eth.Contract(MintTokensABI.abi, "0x877C47c9819fd375b597fEcA8f0f6A6D0730A316");
+            
+            setTimeout(async () => {
+                const balance = await mintContract.methods.balanceOf("0xC5E5284011ce61a6755bCd9727689d2569c7B509").call();
+                console.log("Carbon Tokens:", balance);
+                setTokensReceived(balance);
+            }, 3000); // Adding 3 seconds delay after minting ✅
+
+        } catch (error) {
+            console.error("Error fetching tokens:", error);
+        }
+    };
+
+    // Auto-fetch tokens when generator wallet connects
+    useEffect(() => {
+        if (web3 && generatorAddress) {
+            fetchTokensReceived(web3, generatorAddress);
+        }
+    }, [web3, generatorAddress]);
+
     return (
     <React.Fragment>
         <div>
@@ -175,7 +200,7 @@ const GeneratorDashboard=(props)=>{
             <br/><br/>
             <button onClick={handleConnectWallet}>Connect Wallet</button>
             <br/>
-            <h3>Wallet Address : {generatorAddress}</h3>
+            <h3>Wallet Address : {generatorAddress} CCT</h3>
                 
                 
             {/*evidence upload*/}
@@ -365,8 +390,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x1ab1077e48e4E270FB1258484B9fb5dc6FDC4184");
-            await contract.methods.voteToApprove("0xd96951CfE2089d58Ed00a618171c771bA78F8C3C", co2Sequestration)
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x8c48D8f0C6C493e3da5Eade6d503ccb957AcFCEb");
+            await contract.methods
+                .voteToApprove("0xC5E5284011ce61a6755bCd9727689d2569c7B509", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {
