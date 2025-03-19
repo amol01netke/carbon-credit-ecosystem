@@ -1,5 +1,6 @@
 const MultiValidator = artifacts.require("MultiValidator");
 const MintTokens=artifacts.require("MintTokens");
+const AMM=artifacts.require("AMM");
 
 module.exports = async function (deployer, network, accounts) {
     if (!accounts[0]) {
@@ -18,6 +19,6 @@ module.exports = async function (deployer, network, accounts) {
     const mintTokensAddress = mintTokensInstance.address;
 
     await deployer.deploy(MultiValidator, validatorAddress, mintTokensAddress, { from: validatorAddress, value: initialFunding });
-
+    await deployer.deploy(AMM,mintTokensAddress);
     console.log("Deployment successful!");
 };

@@ -1,11 +1,12 @@
 import Footer from "../../components/Footer/Footer";
 import Header from "../../components/Header/Header";
 import "./UserDashboard.css";
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffesct} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import {useWallet} from "../../context/WalletContext";
-import MultiValidatorABI from "../../abis/MutliValidator.json"
+import MultiValidatorABI from "../../abis/MutliValidator.json";
 import MintTokensABI from "../../abis/MintTokens.json";
+import ammABI from "../../abis/AMM.json";
 
 const Afforestation=()=>{
     const [latitude, setLatitude]=useState(null);
@@ -135,6 +136,8 @@ const GeneratorDashboard=(props)=>{
     const {generatorAddress,setGeneratorAddress}=useWallet();
     const [sequestrationType,setSequestrationType]=useState("select");
     const [tokensReceived, setTokensReceived]=useState(0);
+    const [listAmount,setListAmount]=useState("");
+    const [pricePerCCT,setPricePerCCT]=useState("");
 
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -161,36 +164,34 @@ const GeneratorDashboard=(props)=>{
             console.error("Error connecting wallet!");   
         } 
     }
-        
+       
+     //fetch CCT Balance
+     const fetchTokensReceived = async () => {
+        if (!web3 || !generatorAddress) return;
+
+        try {
+            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0x6649e1B7FF437051A8cE566e13C5d8FDd56f96A1");
+            const balance = await mintContract.methods.balanceOf(generatorAddress).call();
+            const cctBalance=await web3.utils.fromWei(balance,"ether");
+            console.log("Carbon Tokens:", cctBalance);
+            setTokensReceived(cctBalance); 
+        } catch (error) {
+            console.error("Error fetching tokens:", error);
+        }
+    };
+
+    //listing on AMM
+    const listOnAMM=async()=>{
+        const listContract=new web3.eth.Contract(ammABI.abi,"");
+        await listContract.methods.listTokens(listAmount,pricePerCCT);
+    }
+
     //logout
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
         console.log(`Logged out!`);
     }
     
-    // Fetch Carbon Tokens Received
-    const fetchTokensReceived = async (web3Instance, address) => {
-        try {
-            const mintContract = new web3Instance.eth.Contract(MintTokensABI.abi, "0x877C47c9819fd375b597fEcA8f0f6A6D0730A316");
-            
-            setTimeout(async () => {
-                const balance = await mintContract.methods.balanceOf("0xC5E5284011ce61a6755bCd9727689d2569c7B509").call();
-                console.log("Carbon Tokens:", balance);
-                setTokensReceived(balance);
-            }, 3000); // Adding 3 seconds delay after minting ✅
-
-        } catch (error) {
-            console.error("Error fetching tokens:", error);
-        }
-    };
-
-    // Auto-fetch tokens when generator wallet connects
-    useEffect(() => {
-        if (web3 && generatorAddress) {
-            fetchTokensReceived(web3, generatorAddress);
-        }
-    }, [web3, generatorAddress]);
-
     return (
     <React.Fragment>
         <div>
@@ -200,7 +201,7 @@ const GeneratorDashboard=(props)=>{
             <br/><br/>
             <button onClick={handleConnectWallet}>Connect Wallet</button>
             <br/>
-            <h3>Wallet Address : {generatorAddress} CCT</h3>
+            <h3>Wallet Address : {generatorAddress}</h3>
                 
                 
             {/*evidence upload*/}
@@ -215,8 +216,20 @@ const GeneratorDashboard=(props)=>{
             {sequestrationType==="afforestation" &&  <Afforestation/>}    
             {sequestrationType==="soil-sequestration" &&  <SoilSequestration/>}
 
-            {/**received tokens */}
+             {/* Fetch Tokens */}
+             <br />
+            <button onClick={fetchTokensReceived}>View CCT Received</button>
+            <br/>
             Tokens received : {tokensReceived}
+            
+            {/**list on AMM */}
+            <br/><br/>
+            <input type="number" placeholder="Amount to List" 
+                value={listAmount} onChange={(e)=>setListAmount(e.target.value)}/>
+            <input type="number" placeholder="Price per CCT" 
+                value={pricePerCCT} onChange={(e)=>setPricePerCCT(e.target.value)} />
+            <button onClick={listOnAMM}>List on AMM</button>
+
             {/*logout*/}    
             <br/><br/>
             <button onClick={handleLogout}>Logout</button>
@@ -225,94 +238,83 @@ const GeneratorDashboard=(props)=>{
     );
 }
 
-// const ConsumerDashboard=(props)=>{
-//     const [web3,setWeb3]=useState(null);
-//     const [userWalletAddress,setUserWalletAddress]=useState("");
-//     const [contract,setContract]=useState(null);
-//     const [buyAmount,setBuyAmount]=useState(0);
-        
-//     const handleConnectWallet=async()=>{
-//         try{
-//             const web3Instance=await getWeb3();
+const ConsumerDashboard=(props)=>{
+    const [web3,setWeb3]=useState(null);
+    const [consumerAddress,setConsumerAddress]=useState(null);  
+    const [isFetched,setIsFetched]=useState(false);
+    const [listings,setListings]=useState([]);
+       
+      //wallet connection
+      const handleConnectWallet=async()=>{
+        try{
+            const web3Instance=await getWeb3();
                 
-//             if(web3Instance){
-//                 setWeb3(web3Instance);
-//                 console.log('Web3 initialized!',web3Instance);
-//             }else{
-//                 console.error('Failed to initialize Web3!');
-//                 return;
-//             }
+            if(web3Instance){
+                setWeb3(web3Instance);
+                console.log('Web3 initialized!',web3Instance);
+            }else{
+                console.error('Failed to initialize Web3!');
+                return;
+            }
                
-//             const accounts = await web3Instance.eth.getAccounts();
-//             if (accounts.length > 0){
-//                 setUserWalletAddress(accounts[0]);
-//                 console.log(`Connected Wallet Address: ${accounts[0]}`);
-//             }else{
-//                 console.error('No accounts found!');
-//                 return;
-//             }
+            const accounts = await web3Instance.eth.getAccounts();
+            if (accounts.length > 0){
+                setConsumerAddress(accounts[0]);
+                console.log(`Connected Wallet Address: ${accounts[0]}`);
+            }else{
+                console.error('No accounts found!');
+                return;
+            }
+        }catch(error){
+            console.error("Error connecting wallet!");   
+        } 
+    }
 
-//             const contractInstance = new web3Instance.eth.Contract(buyCreditsABI.abi, contractAddress_buy);
-//             setContract(contractInstance);
-//             console.log('Contract Initialized!', contractInstance);
-//         }catch(error){
-//             console.error("Error connecting wallet!");   
-//         } 
-//     }
-        
-//     const buyCredits=async()=>{
-//         if (!web3 || !contract || !userWalletAddress) {
-//             console.error('Web3, contract, or user wallet not available!');
-//             return;
-//         }
+    //fetch listings
+    const fetchFromAMM=async()=>{
+    }
 
-//         if (buyAmount <= 0) {
-//             console.error("Please enter a valid mint amount greater than 0.");
-//             return;
-//         }
+    //buy cct
+    const buyCCT=()=>{
+    }   
 
-//         try{
-//             const amountInWei = web3.utils.toWei(buyAmount.toString(), "ether");
+    //logout
+    const handleLogout=()=>{
+        props.setIsLoggedIn(false);
+        console.log("Logged out!");
+    }
 
-//             await contract.methods.buyTokens(buyAmount).send({
-//                 from: userWalletAddress, // User's wallet address
-//                 value: amountInWei // The Ether sent to purchase the tokens
-//             });
-        
-//             console.log(`${buyAmount} tokens credited to your wallet!`);
-//         }catch(error){
-//             console.error(error.message);
-//         }
-//     }
-        
-//     const handleLogout=()=>{
-//         props.setIsLoggedIn(false);
-//         console.log("Logged out!");
-//     }
+    return (
+        <React.Fragment>
+            <div>               
+                <h1>CONSUMER DASHBOARD</h1>
+                {/*wallet connection*/}
+                <br/>
+                <button onClick={handleConnectWallet}>Connect Wallet</button>
+                <br/>
+                <h3>Wallet Address : {consumerAddress}</h3>
 
-//     return (
-//         <React.Fragment>
-//             <div>               
-//                 <h1>CONSUMER DASHBOARD</h1>
+                {/**fetch from amm */}
+                <br/>
+                <button onClick={fetchFromAMM}>Fetch from AMM</button>
+                {isFetched && 
+                <div>
+                    <div className="listing-section"> 
+                    </div>
 
-//                 {/*wallet connection*/}
-//                 <br/><br/>
-//                 <button onClick={handleConnectWallet}>Connect Wallet</button>
+                    {/**buy */}
+                    <br/>
+                    <input type="numer" placeholder="CCT to Buy"/>
+                    <button onClick={buyCCT}>Buy CCT</button>
+                </div>
+                }
                 
-//                 {/*token transfer*/}
-//                 <br/><br/>
-//                 <input type="number"
-//                  value={buyAmount} 
-//                  onChange={(e)=>setBuyAmount(e.target.value)}/>
-//                 <br/>
-//                 <button onClick={buyCredits}>Buy</button>
-                
-//                 {/*logout*/}
-//                 <br/><br/>
-//                 <button onClick={handleLogout}>Logout</button>
-//             </div>
-//         </React.Fragment>);
-// }
+                {/*logout*/}
+                <br/><br/>
+                <button onClick={handleLogout}>Logout</button>
+            </div>
+        </React.Fragment>);
+}
 
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -390,9 +392,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x8c48D8f0C6C493e3da5Eade6d503ccb957AcFCEb");
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x15585835636CDf66E0D19B92431012A919702eC8");
             await contract.methods
-                .voteToApprove("0xC5E5284011ce61a6755bCd9727689d2569c7B509", co2Sequestration)
+                .voteToApprove("0xf5bf87EF10746B570e4E2D7f36899859edf03Fe7", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {
@@ -529,9 +531,9 @@ const UserDashboard=(props)=>{
             Component=GeneratorDashboard;
             break;
 
-        // case "consumer":
-        //     Component=ConsumerDashboard;
-        //     break;
+        case "consumer":
+            Component=ConsumerDashboard;
+            break;
             
         case "validator":
             Component=ValidatorDashboard;
