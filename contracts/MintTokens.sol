@@ -13,4 +13,11 @@ contract MintTokens {
         balanceOf[_generator] += _amount;
         totalSupply += _amount;
     }
+
+    function transferFrom(address _generator, address _amm, uint256 _amount) external{
+        require(balanceOf[_generator] >= _amount, "Not enough CCT tokens");
+        
+        balanceOf[_generator]-=_amount;
+        balanceOf[_amm]+=_amount;
+    }
 }

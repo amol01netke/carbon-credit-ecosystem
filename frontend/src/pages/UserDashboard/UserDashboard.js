@@ -1,7 +1,7 @@
 import Footer from "../../components/Footer/Footer";
 import Header from "../../components/Header/Header";
 import "./UserDashboard.css";
-import React, { useState, useEffesct} from "react";
+import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
 import {useWallet} from "../../context/WalletContext";
 import MultiValidatorABI from "../../abis/MutliValidator.json";
@@ -170,7 +170,7 @@ const GeneratorDashboard=(props)=>{
         if (!web3 || !generatorAddress) return;
 
         try {
-            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0x6649e1B7FF437051A8cE566e13C5d8FDd56f96A1");
+            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0x3263d06fA3bf21d6cDBa8d61A37F317EF43d193f");
             const balance = await mintContract.methods.balanceOf(generatorAddress).call();
             const cctBalance=await web3.utils.fromWei(balance,"ether");
             console.log("Carbon Tokens:", cctBalance);
@@ -182,8 +182,9 @@ const GeneratorDashboard=(props)=>{
 
     //listing on AMM
     const listOnAMM=async()=>{
-        const listContract=new web3.eth.Contract(ammABI.abi,"");
-        await listContract.methods.listTokens(listAmount,pricePerCCT);
+        const listContract=new web3.eth.Contract(ammABI.abi,"0xfb2964dccbe15A0D32C1856b18bF9b9Cd2066369");
+        await listContract.methods.listTokens(listAmount,pricePerCCT).send({from:generatorAddress});
+        console.log(`Listed ${listAmount} CCT at ${pricePerCCT} DAI each`);
     }
 
     //logout
@@ -272,6 +273,12 @@ const ConsumerDashboard=(props)=>{
 
     //fetch listings
     const fetchFromAMM=async()=>{
+        if (!web3) return;
+
+        try {
+        } catch (error) {
+            console.error("Error fetching listings:", error);
+        }
     }
 
     //buy cct
@@ -392,9 +399,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x15585835636CDf66E0D19B92431012A919702eC8");
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x5B39085c909C0f9A91646e65e936d3d8E84bAD56");
             await contract.methods
-                .voteToApprove("0xf5bf87EF10746B570e4E2D7f36899859edf03Fe7", co2Sequestration)
+                .voteToApprove("0xd33217634490C6E45F93700b1fd4A565e5d18062", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {

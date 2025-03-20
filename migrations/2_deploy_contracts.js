@@ -14,11 +14,16 @@ module.exports = async function (deployer, network, accounts) {
     console.log(`Validator: ${validatorAddress}`);
     console.log(`Initial Funding: ${initialFunding} wei`);
 
+    //mint tokens
     await deployer.deploy(MintTokens);
     const mintTokensInstance = await MintTokens.deployed();
     const mintTokensAddress = mintTokensInstance.address;
 
+    //multivalidator
     await deployer.deploy(MultiValidator, validatorAddress, mintTokensAddress, { from: validatorAddress, value: initialFunding });
+    
+    //amm
     await deployer.deploy(AMM,mintTokensAddress);
+    
     console.log("Deployment successful!");
 };
