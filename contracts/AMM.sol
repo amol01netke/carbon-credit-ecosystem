@@ -31,4 +31,8 @@ contract AMM{
             pricePerCCT: _price
         }));
     }
+
+    function fetchListings() external view returns (Listing[] memory){
+        return listings;
+    }
 }

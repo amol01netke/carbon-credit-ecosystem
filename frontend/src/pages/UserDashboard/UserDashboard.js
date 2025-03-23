@@ -170,7 +170,7 @@ const GeneratorDashboard=(props)=>{
         if (!web3 || !generatorAddress) return;
 
         try {
-            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0x3263d06fA3bf21d6cDBa8d61A37F317EF43d193f");
+            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0xACc1E21b4fcA2A16e44B30e145f12b098F0EF5c0");
             const balance = await mintContract.methods.balanceOf(generatorAddress).call();
             const cctBalance=await web3.utils.fromWei(balance,"ether");
             console.log("Carbon Tokens:", cctBalance);
@@ -182,7 +182,7 @@ const GeneratorDashboard=(props)=>{
 
     //listing on AMM
     const listOnAMM=async()=>{
-        const listContract=new web3.eth.Contract(ammABI.abi,"0xfb2964dccbe15A0D32C1856b18bF9b9Cd2066369");
+        const listContract=new web3.eth.Contract(ammABI.abi,"0x9028c3C96502d833570D24cA2D3cCDa86B92c275");
         await listContract.methods.listTokens(listAmount,pricePerCCT).send({from:generatorAddress});
         console.log(`Listed ${listAmount} CCT at ${pricePerCCT} DAI each`);
     }
@@ -243,7 +243,6 @@ const ConsumerDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [consumerAddress,setConsumerAddress]=useState(null);  
     const [isFetched,setIsFetched]=useState(false);
-    const [listings,setListings]=useState([]);
        
       //wallet connection
       const handleConnectWallet=async()=>{
@@ -271,11 +270,47 @@ const ConsumerDashboard=(props)=>{
         } 
     }
 
+    //display listings
+    const displayListings=async(listings)=>{
+        const listDiv=document.getElementById("cct-listings");
+        listDiv.innerHTML="";
+
+        listings.forEach((listing)=>{
+            const element=document.createElement("div");
+            element.classList.add("listing-item");
+            element.innerHTML=`
+                <p>Seller : ${listing.seller}</p>
+                <p>Amount : ${listing.amount}</p>
+                <p>Price : ${listing.pricePerCCT}</p>
+            `;
+            
+            listDiv.appendChild(element);
+        });
+    }
+
     //fetch listings
     const fetchFromAMM=async()=>{
         if (!web3) return;
 
         try {
+            const contract=new web3.eth.Contract(ammABI.abi,"0x9028c3C96502d833570D24cA2D3cCDa86B92c275");
+            const listings=await contract.methods.fetchListings().call();
+
+            const formattedListings=listings.map((listing,idx)=>({
+                seller: listing.seller,
+                amount: web3.utils.fromWei(listing.amount,"ether"),
+                pricePerCCT: web3.utils.fromWei(listing.pricePerCCT,"ether"),
+            }));
+
+            console.log("Fetched Listings : ",formattedListings);
+            
+            if (formattedListings.length > 0) {
+                setIsFetched(true);  // ✅ Set isFetched to true when listings are available
+                displayListings(formattedListings);
+            } else {
+                setIsFetched(false); // ✅ Ensure UI doesn't show empty state
+                console.log("No listings found.");
+            }
         } catch (error) {
             console.error("Error fetching listings:", error);
         }
@@ -304,9 +339,8 @@ const ConsumerDashboard=(props)=>{
                 {/**fetch from amm */}
                 <br/>
                 <button onClick={fetchFromAMM}>Fetch from AMM</button>
-                {isFetched && 
                 <div>
-                    <div className="listing-section"> 
+                    <div id="cct-listings"> 
                     </div>
 
                     {/**buy */}
@@ -314,7 +348,6 @@ const ConsumerDashboard=(props)=>{
                     <input type="numer" placeholder="CCT to Buy"/>
                     <button onClick={buyCCT}>Buy CCT</button>
                 </div>
-                }
                 
                 {/*logout*/}
                 <br/><br/>
@@ -399,9 +432,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x5B39085c909C0f9A91646e65e936d3d8E84bAD56");
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0xa8a9b6D23E0D9452F9d6eCC7Cd81378129e93089");
             await contract.methods
-                .voteToApprove("0xd33217634490C6E45F93700b1fd4A565e5d18062", co2Sequestration)
+                .voteToApprove("0x675Dc79bCDf451bDbAeA27804A1d41c041039434", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {
