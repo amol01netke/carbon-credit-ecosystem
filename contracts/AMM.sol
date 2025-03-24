@@ -16,23 +16,53 @@ contract AMM{
     IMintContract public mintContract;
     uint256 constant CCT_DECIMALS = 10**18; // Scaling factor
 
-    constructor(address _mintContract) {
+    address public consumer;
+
+    constructor(address _consumer,address _mintContract) payable{
+        require(_consumer != address(0), "Validator address cannot be zero");
+        consumer = _consumer;
         mintContract = IMintContract(_mintContract);
     }
 
     function listTokens(uint256 _amount, uint256 _price) external {
         uint256 scaledAmount = _amount * CCT_DECIMALS; // Convert to full units
+        uint256 scaledPrice = _price * 1 ether;
 
         mintContract.transferFrom(msg.sender, address(this), scaledAmount);
 
         listings.push(Listing({
             seller: msg.sender,
             amount: scaledAmount,
-            pricePerCCT: _price
+            pricePerCCT: scaledPrice
         }));
     }
 
     function fetchListings() external view returns (Listing[] memory){
         return listings;
+    }
+
+    function buyTokens(address _gen, uint256 _amount) external payable{
+        uint256 scaledBuyAmount=_amount*CCT_DECIMALS;
+
+        //find the listing
+        uint256 listingIdx=type(uint256).max;
+        for(uint256 i=0;i<listings.length;i++){
+            if(listings[i].seller== _gen){
+                listingIdx=i;
+                break;
+            }
+        }
+
+        //check if the seller has enough cct
+        Listing storage listing = listings[listingIdx];
+        require(listing.amount>=scaledBuyAmount,"Seller does not have enough CCT");
+        
+        //transfer cct
+        mintContract.transferFrom(address(this),msg.sender,scaledBuyAmount);
+        listing.amount-=scaledBuyAmount;
+
+        //send eth
+        uint256 totalETH=(scaledBuyAmount * listing.pricePerCCT)/CCT_DECIMALS;
+        payable(_gen).transfer(totalETH);
     }
 }

@@ -21,3 +21,20 @@
     align-items: center;
     margin-top: 20px;
 }
+
+.listing-item{
+    background-color: #ccc;
+}
+
+.listing-item:hover{
+    background-color: #eee;
+    cursor: pointer;
+}
+
+.buy-section{
+    margin: 50px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #333;
+    color: white; 
+}

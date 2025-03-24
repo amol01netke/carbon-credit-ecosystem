@@ -170,7 +170,7 @@ const GeneratorDashboard=(props)=>{
         if (!web3 || !generatorAddress) return;
 
         try {
-            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0xACc1E21b4fcA2A16e44B30e145f12b098F0EF5c0");
+            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0xD0daaa035EAAD5C5C6A2dF59F126C22B0Be89E75");
             const balance = await mintContract.methods.balanceOf(generatorAddress).call();
             const cctBalance=await web3.utils.fromWei(balance,"ether");
             console.log("Carbon Tokens:", cctBalance);
@@ -182,7 +182,7 @@ const GeneratorDashboard=(props)=>{
 
     //listing on AMM
     const listOnAMM=async()=>{
-        const listContract=new web3.eth.Contract(ammABI.abi,"0x9028c3C96502d833570D24cA2D3cCDa86B92c275");
+        const listContract=new web3.eth.Contract(ammABI.abi,"0x08A49cAb6caA0240aFc1De651772a3A10cFD5a2A");
         await listContract.methods.listTokens(listAmount,pricePerCCT).send({from:generatorAddress});
         console.log(`Listed ${listAmount} CCT at ${pricePerCCT} DAI each`);
     }
@@ -241,11 +241,13 @@ const GeneratorDashboard=(props)=>{
 
 const ConsumerDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
-    const [consumerAddress,setConsumerAddress]=useState(null);  
-    const [isFetched,setIsFetched]=useState(false);
-       
-      //wallet connection
-      const handleConnectWallet=async()=>{
+    const [consumerAddress,setConsumerAddress]=useState(null); 
+    const [listings,setListings]=useState([]);
+    const [selectedListing,setSelectedListing]=useState(null);
+    const [buyAmount,setBuyAmount]=useState(0); 
+   
+    //wallet connection
+    const handleConnectWallet=async()=>{
         try{
             const web3Instance=await getWeb3();
                 
@@ -270,33 +272,15 @@ const ConsumerDashboard=(props)=>{
         } 
     }
 
-    //display listings
-    const displayListings=async(listings)=>{
-        const listDiv=document.getElementById("cct-listings");
-        listDiv.innerHTML="";
-
-        listings.forEach((listing)=>{
-            const element=document.createElement("div");
-            element.classList.add("listing-item");
-            element.innerHTML=`
-                <p>Seller : ${listing.seller}</p>
-                <p>Amount : ${listing.amount}</p>
-                <p>Price : ${listing.pricePerCCT}</p>
-            `;
-            
-            listDiv.appendChild(element);
-        });
-    }
-
     //fetch listings
     const fetchFromAMM=async()=>{
         if (!web3) return;
 
         try {
-            const contract=new web3.eth.Contract(ammABI.abi,"0x9028c3C96502d833570D24cA2D3cCDa86B92c275");
+            const contract=new web3.eth.Contract(ammABI.abi,"0x08A49cAb6caA0240aFc1De651772a3A10cFD5a2A");
             const listings=await contract.methods.fetchListings().call();
 
-            const formattedListings=listings.map((listing,idx)=>({
+            const formattedListings=listings.map((listing)=>({
                 seller: listing.seller,
                 amount: web3.utils.fromWei(listing.amount,"ether"),
                 pricePerCCT: web3.utils.fromWei(listing.pricePerCCT,"ether"),
@@ -305,10 +289,8 @@ const ConsumerDashboard=(props)=>{
             console.log("Fetched Listings : ",formattedListings);
             
             if (formattedListings.length > 0) {
-                setIsFetched(true);  // ✅ Set isFetched to true when listings are available
-                displayListings(formattedListings);
+                setListings(formattedListings);
             } else {
-                setIsFetched(false); // ✅ Ensure UI doesn't show empty state
                 console.log("No listings found.");
             }
         } catch (error) {
@@ -317,7 +299,11 @@ const ConsumerDashboard=(props)=>{
     }
 
     //buy cct
-    const buyCCT=()=>{
+    const buyCCT=async()=>{
+        const ammContract=new web3.eth.Contract(ammABI.abi,"0x08A49cAb6caA0240aFc1De651772a3A10cFD5a2A");
+        await ammContract.methods
+            .buyTokens(selectedListing.seller,buyAmount)
+            .send({from: consumerAddress});
     }   
 
     //logout
@@ -339,16 +325,39 @@ const ConsumerDashboard=(props)=>{
                 {/**fetch from amm */}
                 <br/>
                 <button onClick={fetchFromAMM}>Fetch from AMM</button>
-                <div>
-                    <div id="cct-listings"> 
-                    </div>
-
-                    {/**buy */}
-                    <br/>
-                    <input type="numer" placeholder="CCT to Buy"/>
-                    <button onClick={buyCCT}>Buy CCT</button>
+                <div id="cct-listings"> 
+                    {listings.length>0?
+                        (listings.map((listing)=>
+                            (
+                                <div className="listing-item" onClick={() => setSelectedListing(listing)}>
+                                    <p>Seller: {listing.seller}</p>
+                                    <p>Amount: {listing.amount} CCT</p>
+                                    <p>Price: {listing.pricePerCCT} ETH per CCT</p>
+                                </div>
+                            ))
+                        )
+                        :(
+                            <p>No listings available...</p>
+                        )
+                    }
                 </div>
                 
+                {selectedListing && (
+                    <div className="buy-section">
+                        <p>From: {selectedListing.seller}</p>
+                        <p>CCT available : {selectedListing.amount}</p>
+                        <p>Price per CCT: {selectedListing.pricePerCCT} ETH</p>
+                        <input 
+                            type="number" 
+                            placeholder="Enter amount" 
+                            value={buyAmount} 
+                            onChange={(e) => setBuyAmount(e.target.value)} 
+                        />
+                        <p>ETH Required: {buyAmount * selectedListing.pricePerCCT}</p>
+                        <button onClick={buyCCT}>Buy CCT</button>
+                    </div>
+                )}
+
                 {/*logout*/}
                 <br/><br/>
                 <button onClick={handleLogout}>Logout</button>
@@ -432,9 +441,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0xa8a9b6D23E0D9452F9d6eCC7Cd81378129e93089");
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0xDb6F39BA6382F9546232cb2593E981E764814546");
             await contract.methods
-                .voteToApprove("0x675Dc79bCDf451bDbAeA27804A1d41c041039434", co2Sequestration)
+                .voteToApprove("0x228637458631700546383Bb0540F4C6AD75E7E6E", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {

@@ -8,6 +8,7 @@ module.exports = async function (deployer, network, accounts) {
     }
 
     const validatorAddress = accounts[0]; // Validator address
+    const consumerAddress = accounts[2]; // consumer address
     const initialFunding = web3.utils.toWei("50", "ether"); // 10 ETH for contract
 
     console.log("Deploying MultiValidator...");
@@ -23,7 +24,7 @@ module.exports = async function (deployer, network, accounts) {
     await deployer.deploy(MultiValidator, validatorAddress, mintTokensAddress, { from: validatorAddress, value: initialFunding });
     
     //amm
-    await deployer.deploy(AMM,mintTokensAddress);
+    await deployer.deploy(AMM,consumerAddress,mintTokensAddress,{from:consumerAddress,value:initialFunding});
     
     console.log("Deployment successful!");
 };
