@@ -170,7 +170,7 @@ const GeneratorDashboard=(props)=>{
         if (!web3 || !generatorAddress) return;
 
         try {
-            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0xD0daaa035EAAD5C5C6A2dF59F126C22B0Be89E75");
+            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0x98B2dcdC1F9d57F50d5F35E452b1d93389699c79");
             const balance = await mintContract.methods.balanceOf(generatorAddress).call();
             const cctBalance=await web3.utils.fromWei(balance,"ether");
             console.log("Carbon Tokens:", cctBalance);
@@ -182,7 +182,7 @@ const GeneratorDashboard=(props)=>{
 
     //listing on AMM
     const listOnAMM=async()=>{
-        const listContract=new web3.eth.Contract(ammABI.abi,"0x08A49cAb6caA0240aFc1De651772a3A10cFD5a2A");
+        const listContract=new web3.eth.Contract(ammABI.abi,"0x44d9dA13472e1F239F7195d69107Dd44E4981502");
         await listContract.methods.listTokens(listAmount,pricePerCCT).send({from:generatorAddress});
         console.log(`Listed ${listAmount} CCT at ${pricePerCCT} DAI each`);
     }
@@ -277,7 +277,7 @@ const ConsumerDashboard=(props)=>{
         if (!web3) return;
 
         try {
-            const contract=new web3.eth.Contract(ammABI.abi,"0x08A49cAb6caA0240aFc1De651772a3A10cFD5a2A");
+            const contract=new web3.eth.Contract(ammABI.abi,"0x44d9dA13472e1F239F7195d69107Dd44E4981502");
             const listings=await contract.methods.fetchListings().call();
 
             const formattedListings=listings.map((listing)=>({
@@ -300,7 +300,7 @@ const ConsumerDashboard=(props)=>{
 
     //buy cct
     const buyCCT=async()=>{
-        const ammContract=new web3.eth.Contract(ammABI.abi,"0x08A49cAb6caA0240aFc1De651772a3A10cFD5a2A");
+        const ammContract=new web3.eth.Contract(ammABI.abi,"0x44d9dA13472e1F239F7195d69107Dd44E4981502");
         await ammContract.methods
             .buyTokens(selectedListing.seller,buyAmount)
             .send({from: consumerAddress});
@@ -441,9 +441,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0xDb6F39BA6382F9546232cb2593E981E764814546");
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x819Cc848916598c04DC68c24e3CdeD38254B9995");
             await contract.methods
-                .voteToApprove("0x228637458631700546383Bb0540F4C6AD75E7E6E", co2Sequestration)
+                .voteToApprove("0xa59E92c7F9a19ec644bE82b2D0f4Aded84dEf010", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {

@@ -44,7 +44,7 @@ contract AMM{
     function buyTokens(address _gen, uint256 _amount) external payable{
         uint256 scaledBuyAmount=_amount*CCT_DECIMALS;
 
-        //find the listing
+        //find the listing //issue part
         uint256 listingIdx=type(uint256).max;
         for(uint256 i=0;i<listings.length;i++){
             if(listings[i].seller== _gen){
@@ -55,7 +55,7 @@ contract AMM{
 
         //check if the seller has enough cct
         Listing storage listing = listings[listingIdx];
-        require(listing.amount>=scaledBuyAmount,"Seller does not have enough CCT");
+        //require(listing.amount>=scaledBuyAmount,"Seller does not have enough CCT");
         
         //transfer cct
         mintContract.transferFrom(address(this),msg.sender,scaledBuyAmount);
