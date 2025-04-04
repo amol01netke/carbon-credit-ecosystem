@@ -20,4 +20,10 @@ contract MintTokens {
         balanceOf[_sender]-=_amount;
         balanceOf[_receiver]+=_amount;
     }
+
+    function burnFrom(address _from, uint256 _amount) external{
+        require(balanceOf[_from]>=_amount,"Insufficient CCT in consumer's wallet");
+        balanceOf[_from]-=_amount;
+        totalSupply-=_amount;
+    }
 }

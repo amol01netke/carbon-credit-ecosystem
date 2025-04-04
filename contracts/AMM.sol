@@ -3,6 +3,7 @@ pragma solidity ^0.8.19;
 
 interface IMintContract {
     function transferFrom(address from, address to, uint256 amount) external;
+    function burnFrom(address from, uint256 amount) external;
 }
 
 contract AMM{
@@ -64,5 +65,11 @@ contract AMM{
         //send eth
         uint256 totalETH=(scaledBuyAmount * listing.pricePerCCT)/CCT_DECIMALS;
         payable(_gen).transfer(totalETH);
+    }
+
+    //retire tokens
+    function burnTokens(uint256 _amount) public{
+        uint256 scaledAmount = _amount * CCT_DECIMALS;
+        mintContract.burnFrom(msg.sender,scaledAmount);
     }
 }

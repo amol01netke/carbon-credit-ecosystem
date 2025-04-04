@@ -131,6 +131,10 @@ const SoilSequestration = () => {
     );
 };
 
+const mintTokensContractAddress="0xab36C6Aa623D499500c3273a46Bc3C21C0400125";
+const multiValidatorContractAddress="0x5d5949E2AcF0e3E932C6C334098720B78D81D514";
+const ammContractAddress="0x28814a53D6Dc5B73CE9d0892C6d67A78A407f488";
+
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const {generatorAddress,setGeneratorAddress}=useWallet();
@@ -170,7 +174,7 @@ const GeneratorDashboard=(props)=>{
         if (!web3 || !generatorAddress) return;
 
         try {
-            const mintContract = new web3.eth.Contract(MintTokensABI.abi, "0x98B2dcdC1F9d57F50d5F35E452b1d93389699c79");
+            const mintContract = new web3.eth.Contract(MintTokensABI.abi, mintTokensContractAddress);
             const balance = await mintContract.methods.balanceOf(generatorAddress).call();
             const cctBalance=await web3.utils.fromWei(balance,"ether");
             console.log("Carbon Tokens:", cctBalance);
@@ -182,7 +186,7 @@ const GeneratorDashboard=(props)=>{
 
     //listing on AMM
     const listOnAMM=async()=>{
-        const listContract=new web3.eth.Contract(ammABI.abi,"0x44d9dA13472e1F239F7195d69107Dd44E4981502");
+        const listContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
         await listContract.methods.listTokens(listAmount,pricePerCCT).send({from:generatorAddress});
         console.log(`Listed ${listAmount} CCT at ${pricePerCCT} DAI each`);
     }
@@ -245,6 +249,8 @@ const ConsumerDashboard=(props)=>{
     const [listings,setListings]=useState([]);
     const [selectedListing,setSelectedListing]=useState(null);
     const [buyAmount,setBuyAmount]=useState(0); 
+    const [cctReceived,setCCTReceived]=useState("");
+    const [retireAmount,setRetireAmount]=useState("");
    
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -277,7 +283,7 @@ const ConsumerDashboard=(props)=>{
         if (!web3) return;
 
         try {
-            const contract=new web3.eth.Contract(ammABI.abi,"0x44d9dA13472e1F239F7195d69107Dd44E4981502");
+            const contract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
             const listings=await contract.methods.fetchListings().call();
 
             const formattedListings=listings.map((listing)=>({
@@ -300,11 +306,26 @@ const ConsumerDashboard=(props)=>{
 
     //buy cct
     const buyCCT=async()=>{
-        const ammContract=new web3.eth.Contract(ammABI.abi,"0x44d9dA13472e1F239F7195d69107Dd44E4981502");
+        const ammContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
         await ammContract.methods
             .buyTokens(selectedListing.seller,buyAmount)
             .send({from: consumerAddress});
     }   
+
+    //display balance
+    const displayCCT=async()=>{
+        const mintTokensContract=new web3.eth.Contract(MintTokensABI.abi,mintTokensContractAddress);
+        const balance = await mintTokensContract.methods.balanceOf(consumerAddress).call();
+        const cctBalance=await web3.utils.fromWei(balance,"ether");
+        console.log("Carbon Tokens:", cctBalance);
+        setCCTReceived(cctBalance);
+    }
+
+    //retire
+    const retireCredits=async()=>{
+        const burnContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
+        await burnContract.methods.burnTokens(retireAmount).send({from:consumerAddress});
+    }
 
     //logout
     const handleLogout=()=>{
@@ -358,6 +379,21 @@ const ConsumerDashboard=(props)=>{
                     </div>
                 )}
 
+                {/**balance display */}
+                <br/><br/>
+                <p>CCT : {cctReceived}</p>
+                <button onClick={displayCCT} type="button">Display CCT</button>
+                
+                {/**retre credits */}
+                <br/><br/>
+                <input 
+                    type="number" 
+                    placeholder="Enter amount"
+                    value={retireAmount} 
+                    onChange={(e) => setRetireAmount(e.target.value)}
+                />
+                <button onClick={retireCredits} type="button">Retire Credits</button>
+
                 {/*logout*/}
                 <br/><br/>
                 <button onClick={handleLogout}>Logout</button>
@@ -373,6 +409,7 @@ const ValidatorDashboard=(props)=>{
     const [showIframe, setShowIframe] = useState(false);
     const [verificationStatus, setVerificationStatus]=useState("not verified");
     const [co2Sequestration, setCO2Sequestration]=useState("0");
+    const {generatorAddress,setGeneratorAddress}=useWallet();
 
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -441,9 +478,9 @@ const ValidatorDashboard=(props)=>{
             const validatorAddress = accounts[0];
             console.log(validatorAddress);
     
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, "0x819Cc848916598c04DC68c24e3CdeD38254B9995");
+            const contract = new web3.eth.Contract(MultiValidatorABI.abi, multiValidatorContractAddress);
             await contract.methods
-                .voteToApprove("0xa59E92c7F9a19ec644bE82b2D0f4Aded84dEf010", co2Sequestration)
+                .voteToApprove("0x580FD0c35E2f960678b68709372F7adE71DAa6D3", co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {
