@@ -10,7 +10,6 @@ import React from "react";
 import { useState } from "react";
 import UserSelection from "./pages/UserSelection/UserSelection";
 import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
-import {WalletProvider} from "./context/WalletContext";
 
 const App=()=>{
   const [isLoggedIn, setIsLoggedIn]=useState(false);
@@ -63,13 +62,11 @@ const App=()=>{
   }
 
   return (
-  <WalletProvider>
     <Router>
       <div className="App">
         {routes}
       </div>
     </Router>
-  </WalletProvider>
   );
 };
 

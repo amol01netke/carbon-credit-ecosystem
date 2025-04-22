@@ -3,18 +3,45 @@ const fs = require('fs/promises');
 const { notifyValidators } = require('../websocket.js'); // Import WebSocket function
 const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
 
+//upload evidence
 const uploadAfforestationEvidence=async(req,res)=>{
-    try {
-        //notify validators through socket
-        notifyValidators("afforestation");
 
-        //response to user evidence 
-        res.json({ 
-            message: "Data uploaded to IPFS successfully!" 
+}
+
+const uploadEnergySavingsEvidence=async(req,res)=>{
+    const beforeFile = req.files["before"]?.[0];
+    const afterFile = req.files["after"]?.[0];
+
+    if (!beforeFile || !afterFile) {
+        return res.status(400).json({ error: "Both 'before' and 'after' files are required." });
+    }
+
+    try {
+        // Read both files
+        const beforeBuffer = await fs.readFile(beforeFile.path);
+        const afterBuffer = await fs.readFile(afterFile.path);
+
+        // Upload to IPFS
+        const beforeResult = await ipfs.add(beforeBuffer);
+        const afterResult = await ipfs.add(afterBuffer);
+
+        const beforeCID = beforeResult.path;
+        const afterCID = afterResult.path;
+
+        // Notify validators
+        notifyValidators(beforeCID,afterCID, "energy");
+
+        // Respond to frontend
+        res.json({
+            beforeCID,
+            afterCID,
+            message: "Both files uploaded to IPFS successfully!"
         });
+
     } catch (error) {
+        console.error("Error uploading energy evidence:", error);
         res.status(500).json({ error: "Error uploading to IPFS" });
-    } 
+    }
 }
 
 const uploadSoilEvidence = async (req, res) => {
@@ -43,6 +70,15 @@ const uploadSoilEvidence = async (req, res) => {
     } 
 };
 
+//verify evidence
+const verifyAfforestationEvidence=async(req,res)=>{
+
+};
+
+const verifyEnergySavingsEvidence=async(req,res)=>{
+
+};
+
 const verifySoilEvidence=async(req,res)=>{
     let sequestrationAmount=0;
     const { reportCID } = req.body;
@@ -65,11 +101,9 @@ const verifySoilEvidence=async(req,res)=>{
     }
 };
 
-const verifyAfforestationEvidence=async(req,res)=>{
-
-};
-
-exports.uploadSoilEvidence=uploadSoilEvidence;
 exports.uploadAfforestationEvidence=uploadAfforestationEvidence;
-exports.verifySoilEvidence=verifySoilEvidence;
+exports.uploadEnergySavingsEvidence=uploadEnergySavingsEvidence;
+exports.uploadSoilEvidence=uploadSoilEvidence;
 exports.verifyAfforestationEvidence=verifyAfforestationEvidence;
+exports.verifyEnergySavingsEvidence=verifyEnergySavingsEvidence;
+exports.verifySoilEvidence=verifySoilEvidence;

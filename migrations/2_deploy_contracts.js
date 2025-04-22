@@ -7,8 +7,8 @@ module.exports = async function (deployer, network, accounts) {
         throw new Error("accounts[0] is undefined. Check your Truffle network configuration.");
     }
 
-    const validatorAddress = accounts[0]; // Validator address
-    const consumerAddress = accounts[2]; // consumer address
+    const validatorAddress = accounts[0]; // Validator address for MultiValidator contract
+    const consumerAddress = accounts[2]; // consumer address for AMM contract
     const initialFunding = web3.utils.toWei("50", "ether"); // 10 ETH for contract
 
     console.log("Deploying MultiValidator...");

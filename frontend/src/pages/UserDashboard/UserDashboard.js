@@ -3,49 +3,87 @@ import Header from "../../components/Header/Header";
 import "./UserDashboard.css";
 import React, { useState, useEffect} from "react";
 import getWeb3 from "../../handlers/Web3Handler";
-import {useWallet} from "../../context/WalletContext";
 import MultiValidatorABI from "../../abis/MutliValidator.json";
 import MintTokensABI from "../../abis/MintTokens.json";
 import ammABI from "../../abis/AMM.json";
 
 const Afforestation=()=>{
-    const [latitude, setLatitude]=useState(null);
-    const [longitude, setLongitude]=useState(null);
+    return (
+        <div>
+            Pending...
+        </div>
+    );
+};
+
+const EnergySavings = () => {
+    const [before,setBefore]=useState(null);
+    const [beforePreviewURL, setBeforePreviewURL] = useState(null);
+   
+    const [after,setAfter]=useState(null);
+    const [afterPreviewURL,setAfterPreviewURL]=useState(null);
     
-    //fetch co-ordinates
-    const fetchLocation=()=>{
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLatitude(position.coords.latitude);
-                    setLongitude(position.coords.longitude);
-                },
-                (error) => {
-                    console.error("Error fetching location:", error);
-                    alert("Unable to fetch location. Please allow location access.");
-                }
-            );
+    const handleBeforeFileChange=(e)=>{
+        const file = e.target.files[0];
+        if (file && file.type === "application/pdf") {
+            setBefore(file);
+            setBeforePreviewURL(URL.createObjectURL(file)); // Create preview URL
         } else {
-            alert("Geolocation is not supported by this browser.");
-        }
+            alert("Please upload a valid PDF file.");
+        }   
     }
 
-    //handle submit
-    const handleSubmit=async()=>{
+    const handleAfterFileChange=(e)=>{
+        const file = e.target.files[0];
+        if (file && file.type === "application/pdf") {
+            setAfter(file);
+            setAfterPreviewURL(URL.createObjectURL(file)); // Create preview URL
+        } else {
+            alert("Please upload a valid PDF file.");
+        }   
+    }
 
+    const handleSubmit=async(e)=>{
+        e.preventDefault();
+        const formData=new FormData();
+        formData.append("before",before);
+        formData.append("after",after);
+
+        try{
+            const response=await fetch("http://localhost:8000/api/upload-energy-savings",{
+                method: "POST",
+                body: formData,
+                headers: {
+                    Accept: "application/json",
+                },
+            }); 
+        }catch(error){
+            console.log(error);
+        }
     }
 
     return (
         <div>
-           <form onSubmit={handleSubmit}>
-                {/*GPS*/}
-                <br/>
-                <label>Latitude : {latitude} | Longitude : {longitude}</label>
-                <br/>
-                <button type="button" onClick={fetchLocation}>Fetch Location </button>
+            <form onSubmit={handleSubmit}>
+                {/*soil test report*/}
+                <h3>Upload Evidence</h3>
 
+                <div class="evidence-section">
+                    <div class="before">
+                       <p>Before :</p>
+                       <iframe src={beforePreviewURL} width="50%" height="300px"></iframe>
+                       <br/>
+                       <input type="file" onChange={handleBeforeFileChange}/>
+                    </div>
+                    <div class="after">
+                        <p>After :</p>
+                        <iframe src={afterPreviewURL} width="50%" height="300px"></iframe>
+                        <br/>
+                        <input type="file" onChange={handleAfterFileChange}/>
+                    </div>
+                </div>
+                
                 {/*submit*/}
-                <br /><br/>
+                <br/>
                 <button type="submit">Submit</button>
             </form>
         </div>
@@ -131,13 +169,14 @@ const SoilSequestration = () => {
     );
 };
 
-const mintTokensContractAddress="0xab36C6Aa623D499500c3273a46Bc3C21C0400125";
-const multiValidatorContractAddress="0x5d5949E2AcF0e3E932C6C334098720B78D81D514";
-const ammContractAddress="0x28814a53D6Dc5B73CE9d0892C6d67A78A407f488";
+const generatorAddress="0x7c92F2DcA5Eb0583158e474090d4de067AD2ec1E";
+const mintTokensContractAddress="0x0cF2080A1D08ee89Ff44DB95Eb2313a46579F061";
+const multiValidatorContractAddress="0x48381DD9155F2dD49072Ada2F86a2E2Cf82B3741";
+const ammContractAddress="0x58df43bB43252b8C35166Fe0FD512e3b5cfbA0cb";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
-    const {generatorAddress,setGeneratorAddress}=useWallet();
+    const [genAddress,setGenAddress]=useState("");
     const [sequestrationType,setSequestrationType]=useState("select");
     const [tokensReceived, setTokensReceived]=useState(0);
     const [listAmount,setListAmount]=useState("");
@@ -158,7 +197,7 @@ const GeneratorDashboard=(props)=>{
                
             const accounts = await web3Instance.eth.getAccounts();
             if (accounts.length > 0){
-                setGeneratorAddress(accounts[0]);
+                setGenAddress(accounts[0]);
                 console.log(`Connected Wallet Address: ${accounts[0]}`);
             }else{
                 console.error('No accounts found!');
@@ -206,19 +245,21 @@ const GeneratorDashboard=(props)=>{
             <br/><br/>
             <button onClick={handleConnectWallet}>Connect Wallet</button>
             <br/>
-            <h3>Wallet Address : {generatorAddress}</h3>
+            <h3>Wallet Address : {genAddress}</h3>
                 
                 
             {/*evidence upload*/}
             <br/>
             <select className="select-project-type" onChange={(e)=>setSequestrationType(e.target.value)}>
-                <option value="select">Select Sequestration Method</option>
+                <option value="select">Select Carbon Reduction Method</option>
                 <option value="afforestation">Afforestation</option>
+                <option value="energy">Energy Savings</option>
                 <option value="soil-sequestration">Soil Sequestration</option>
-            </select>  
+             </select>  
             <br/>
 
             {sequestrationType==="afforestation" &&  <Afforestation/>}    
+            {sequestrationType==="energy" && <EnergySavings/>}
             {sequestrationType==="soil-sequestration" &&  <SoilSequestration/>}
 
              {/* Fetch Tokens */}
@@ -380,12 +421,12 @@ const ConsumerDashboard=(props)=>{
                 )}
 
                 {/**balance display */}
-                <br/><br/>
-                <p>CCT : {cctReceived}</p>
+                <br/>
                 <button onClick={displayCCT} type="button">Display CCT</button>
-                
+                <p>CCT : {cctReceived}</p>
+
                 {/**retre credits */}
-                <br/><br/>
+                <br/>
                 <input 
                     type="number" 
                     placeholder="Enter amount"
@@ -409,8 +450,7 @@ const ValidatorDashboard=(props)=>{
     const [showIframe, setShowIframe] = useState(false);
     const [verificationStatus, setVerificationStatus]=useState("not verified");
     const [co2Sequestration, setCO2Sequestration]=useState("0");
-    const {generatorAddress,setGeneratorAddress}=useWallet();
-
+    
     //wallet connection
     const handleConnectWallet=async()=>{
         try{
@@ -480,7 +520,7 @@ const ValidatorDashboard=(props)=>{
     
             const contract = new web3.eth.Contract(MultiValidatorABI.abi, multiValidatorContractAddress);
             await contract.methods
-                .voteToApprove("0x580FD0c35E2f960678b68709372F7adE71DAa6D3", co2Sequestration)
+                .voteToApprove(generatorAddress, co2Sequestration)
                 .send({ from: validatorAddress});
     
         } catch (error) {
@@ -519,6 +559,8 @@ const ValidatorDashboard=(props)=>{
                 }
                 else if(data.evidenceType==="soil"){
                     setReportCID(data.cid);
+                }else{
+                    console.log(data.cid1,data.cid2);
                 }
             };
             
