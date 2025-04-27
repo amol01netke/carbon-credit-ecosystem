@@ -91,8 +91,7 @@ const EnergySavings = () => {
 };
 
 const SoilSequestration = () => {
-    const [report, setReport] = useState(null);
-    const [previewURL, setPreviewURL] = useState(null);
+   
     const [ws, setWs] = useState(null);
 
     useEffect(() => {
@@ -105,83 +104,22 @@ const SoilSequestration = () => {
 
         return () => socket.close();
     }, []);
-    
-    //soil test report
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === "application/pdf") {
-            setReport(file);
-            setPreviewURL(URL.createObjectURL(file)); // Create preview URL
-        } else {
-            alert("Please upload a valid PDF file.");
-        }
-    };
-
-    //form submit
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!report) {
-            alert("Please select a file to upload.");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("file", report);
-
-        try {
-            const response = await fetch("http://localhost:8000/api/upload-soil-evidence", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    Accept: "application/json",
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Response : ", data);
-            } else {
-                const error = await response.json();
-                console.error("Error:", error);
-            }
-        } catch (error) {
-            console.error("Request Failed:", error);
-        }
-    };
-
-    return (
-        <React.Fragment>
-            <form onSubmit={handleSubmit} className="soil-form">
-                {/*soil test report*/}
-                <br/>
-                <label>Upload Soil Test Report</label>
-                <br />
-                <input type="file" onChange={handleFileChange} />
-                <br/>
-                <iframe src={previewURL} width="50%" height="300px"></iframe>
-                
-                {/*submit*/}
-                <br /><br/>
-                <button type="submit">Submit</button>
-            </form>
-        </React.Fragment>
-    );
 };
 
-const generatorAddress="0x7c92F2DcA5Eb0583158e474090d4de067AD2ec1E";
-const mintTokensContractAddress="0x0cF2080A1D08ee89Ff44DB95Eb2313a46579F061";
-const multiValidatorContractAddress="0x48381DD9155F2dD49072Ada2F86a2E2Cf82B3741";
-const ammContractAddress="0x58df43bB43252b8C35166Fe0FD512e3b5cfbA0cb";
+const generatorAddress="0xa6bbd00f2a119b4eC73255fBee52A7FFE2157F65";
+const mintTokensContractAddress="0x64e99a1aD71eA852E85B097Bd393cEE48253eAcB";
+const multiValidatorContractAddress="0x60985Ffd4783CC8e83A8b2BAa7b5e13b1AAa3E60";
+const ammContractAddress="0xCE3520feDFf525459FB5246261a6674D72B0B8b9";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [genAddress,setGenAddress]=useState("");
-    const [sequestrationType,setSequestrationType]=useState("select");
+    const [file, setFile] = useState(null);
+    const [previewURL, setPreviewURL] = useState(null);
     const [tokensReceived, setTokensReceived]=useState(0);
     const [listAmount,setListAmount]=useState("");
     const [pricePerCCT,setPricePerCCT]=useState("");
-
+   
     //wallet connection
     const handleConnectWallet=async()=>{
         try{
@@ -208,8 +146,52 @@ const GeneratorDashboard=(props)=>{
         } 
     }
        
-     //fetch CCT Balance
-     const fetchTokensReceived = async () => {
+    //report
+    const handleFileChange=(e)=>{
+        const file = e.target.files[0];
+        if (file && file.type === "application/pdf") {
+            setFile(file);
+            setPreviewURL(URL.createObjectURL(file));
+        } else {
+            alert("Please upload a valid PDF file.");
+        }
+    }
+
+    //submit
+    const handleSubmit=async(e)=>{
+        e.preventDefault();
+
+        if (!file) {
+            alert("Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await fetch("http://localhost:8000/api/upload-evidence", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Response : ", data);
+            } else {
+                const error = await response.json();
+                console.error("Error:", error);
+            }
+        } catch (error) {
+            console.error("Request Failed:", error);
+        }
+    }
+    
+    //fetch CCT Balance
+    const fetchTokensReceived = async () => {
         if (!web3 || !generatorAddress) return;
 
         try {
@@ -246,24 +228,20 @@ const GeneratorDashboard=(props)=>{
             <button onClick={handleConnectWallet}>Connect Wallet</button>
             <br/>
             <h3>Wallet Address : {genAddress}</h3>
-                
-                
+                      
             {/*evidence upload*/}
             <br/>
-            <select className="select-project-type" onChange={(e)=>setSequestrationType(e.target.value)}>
-                <option value="select">Select Carbon Reduction Method</option>
-                <option value="afforestation">Afforestation</option>
-                <option value="energy">Energy Savings</option>
-                <option value="soil-sequestration">Soil Sequestration</option>
-             </select>  
-            <br/>
+            <p>Upload Carbon Reduction Report : </p>
+            <form onSubmit={handleSubmit}>
+                <input type="file" onChange={handleFileChange}/>
+                <br/>
+                <iframe src={previewURL} width="50%" height="300px"></iframe>
+                <br/>
+                <button type="submit">Submit</button>
+            </form>
 
-            {sequestrationType==="afforestation" &&  <Afforestation/>}    
-            {sequestrationType==="energy" && <EnergySavings/>}
-            {sequestrationType==="soil-sequestration" &&  <SoilSequestration/>}
-
-             {/* Fetch Tokens */}
-             <br />
+            {/* Fetch Tokens */}
+            <br />
             <button onClick={fetchTokensReceived}>View CCT Received</button>
             <br/>
             Tokens received : {tokensReceived}
@@ -445,11 +423,8 @@ const ConsumerDashboard=(props)=>{
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null);  
-    const [evidenceType, setEvidenceType]=useState(""); 
-    const [reportCID,setReportCID]=useState("");   
+    const [fileCID,setFileCID]=useState("");   
     const [showIframe, setShowIframe] = useState(false);
-    const [verificationStatus, setVerificationStatus]=useState("not verified");
-    const [co2Sequestration, setCO2Sequestration]=useState("0");
     
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -477,42 +452,24 @@ const ValidatorDashboard=(props)=>{
         } 
     }
 
-    //view soil evidence
-    const viewSoilEvidence =async () => {
-        setTimeout(() => {
-            setShowIframe(true);
-        }, 2000);
-    };
+    //view evidence
+    const viewEvidence=()=>{
+        
+    }
 
-    //process soil evidence
-    const verifySoilEvidence=async()=>{
+    //verify evidence
+    const verifyEvidence=async()=>{
         try{
-            const response = await fetch("http://localhost:8000/api/verify-soil-evidence",{
-                method:"POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ 
-                    reportCID
-                }) 
+            const response=await fetch(`http://localhost:8000/api/verify-evidence`,{
+                
             });
-
-            if(response.ok){
-                const data = await response.json();
-                console.log(data);
-    
-                if(data.status==="verified"){            
-                    setVerificationStatus(data.status);
-                    setCO2Sequestration(data.sequestrationAmount);
-                }
-            }
         }catch(error){
-            console.log("Error : ",error);
+            console.log(error);
         }
-    }   
+    }
 
-    //approve soil evidence
-    const approveSoilEvidence = async () => {
+    //approve evidence
+    const approveEvidence = async () => {
         try {
             const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
             const validatorAddress = accounts[0];
@@ -520,24 +477,13 @@ const ValidatorDashboard=(props)=>{
     
             const contract = new web3.eth.Contract(MultiValidatorABI.abi, multiValidatorContractAddress);
             await contract.methods
-                .voteToApprove(generatorAddress, co2Sequestration)
+                .voteToApprove(generatorAddress, 5)
                 .send({ from: validatorAddress});
     
         } catch (error) {
             console.error("Error approving evidence:", error);
         }
     };
-    
-
-    //view afforestation evidence
-    const viewAfforestationEvidence=()=>{
-
-    }
-
-    //verify afforestation evidence
-    const verifyAfforestationEvidence=async()=>{
-
-    }
     
     //logout
     const handleLogout=()=>{
@@ -553,15 +499,7 @@ const ValidatorDashboard=(props)=>{
             socket.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
                 console.log(data);
-                setEvidenceType(data.evidenceType);
-                if(data.evidenceType==="afforestation"){
-                    
-                }
-                else if(data.evidenceType==="soil"){
-                    setReportCID(data.cid);
-                }else{
-                    console.log(data.cid1,data.cid2);
-                }
+                setFileCID(data.cid);
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
@@ -579,24 +517,21 @@ const ValidatorDashboard=(props)=>{
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
 
-                {/*soil evidence  */}               
-                {evidenceType==="soil" && (
                     <div className="soil-evidence-section">
                         {/*disply evidence details*/}
                         <br/>
-                        <p>Uploader : {}</p>
-                        <p>Evidence Type : {evidenceType}</p>
-                        <p>Evidence CID : {reportCID}</p>
+                        <p>Evidence CID : {fileCID}</p>
                         
                         {/*view evidence*/}
                         <br/>
-                        <button onClick={viewSoilEvidence}>View Soil Evidence</button>
-                        <br/>
+                        <button onClick={viewEvidence}>View Evidence</button>
+                    
+                        <br/><br/>
                         {showIframe ? 
                         (
                             <>
                                 <iframe 
-                                    src={`https://ipfs.io/ipfs/${reportCID}`} 
+                                    src={`https://ipfs.io/ipfs/${fileCID}`} 
                                     width="50%" 
                                     height="300px">
                                 </iframe>
@@ -611,36 +546,14 @@ const ValidatorDashboard=(props)=>{
                             </>
                         )}
 
-                        {/** soil evidence processing*/}
                         <br/>
-                        <button onClick={verifySoilEvidence}>Verify Soil Evidence</button>
-                        <br/><br/>
-                        <p>Verification Status : {verificationStatus}</p>
-                        <p>CO<sub>2</sub> Sequestration : {co2Sequestration} tons</p>
+                        <button onClick={verifyEvidence}>Verify Evidence</button>   
+                        <p>Credits to Allot : </p>
+                        
                         <br/>
-                        <button onClick={approveSoilEvidence}>Approve Soil Evidence</button>
+                        <button onClick={approveEvidence}>Approve Evidence</button>
 
                     </div>
-                )}
-                
-                {/*afforestation evidence  */}               
-                {evidenceType==="afforestation" && (
-                    <div>
-                        <button onClick={viewAfforestationEvidence}>View Evidence</button>
-                        <br/><br/>
-                        {showIframe ? 
-                        (
-                            <>
-                            </>
-                        ) :
-                        (
-                            <>
-                            </>
-                        )}
-                        <br/>
-                        <button onClick={verifyAfforestationEvidence}>Verify</button>
-                    </div>
-                )}
                 
                 {/*logout*/}
                 <br/>

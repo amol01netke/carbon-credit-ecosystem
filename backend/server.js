@@ -27,19 +27,9 @@ server.post("/api/register-generator", userController.registerGenerator);
 server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
 
-//upload evidence
-server.post("/api/upload-afforestation-evidence",ipfsHandler.uploadAfforestationEvidence);
-server.post("/api/upload-energy-savings",upload.fields(
-  [
-    { name: "before", maxCount: 1 },
-    { name: "after", maxCount: 1 }
-  ]
-),ipfsHandler.uploadEnergySavingsEvidence);
-server.post("/api/upload-soil-evidence",upload.single("file"),ipfsHandler.uploadSoilEvidence);
-
-//verify evidence
-server.post("/api/verify-soil-evidence",ipfsHandler.verifySoilEvidence);
-server.post("/api/verify-afforestation-evidence",ipfsHandler.verifyAfforestationEvidence);
+//evidence
+server.post("/api/upload-evidence",upload.single("file"),ipfsHandler.uploadEvidence);
+server.post("/api/verify-evidence",ipfsHandler.verifyEvidence)
 
 //connect with database and start the server
 mongoose.connect(
