@@ -29,7 +29,12 @@ server.post("/api/register-validator", userController.registerValidator);
 
 //evidence
 server.post("/api/upload-evidence",upload.single("file"),ipfsHandler.uploadEvidence);
-server.post("/api/verify-evidence",ipfsHandler.verifyEvidence)
+server.post("/api/verify-evidence",(req,res)=>{
+  res.json({
+    status:"verified",
+    credits: 5
+  });
+});
 
 //connect with database and start the server
 mongoose.connect(

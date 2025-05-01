@@ -16,6 +16,7 @@
   },
   "scripts": {
     "start-generator": "cross-env PORT=3000 react-scripts start",
+    "start-generator-2": "cross-env PORT=3004 react-scripts start",
     "start-consumer": "cross-env PORT=3001 react-scripts start",
     "start-validator": "cross-env PORT=3002 react-scripts start",
     "start-validator-2":"cross-env PORT=3003 react-scripts start",

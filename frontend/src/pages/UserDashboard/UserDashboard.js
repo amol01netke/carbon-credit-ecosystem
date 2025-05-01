@@ -7,109 +7,26 @@ import MultiValidatorABI from "../../abis/MutliValidator.json";
 import MintTokensABI from "../../abis/MintTokens.json";
 import ammABI from "../../abis/AMM.json";
 
-const Afforestation=()=>{
-    return (
-        <div>
-            Pending...
-        </div>
-    );
-};
-
-const EnergySavings = () => {
-    const [before,setBefore]=useState(null);
-    const [beforePreviewURL, setBeforePreviewURL] = useState(null);
+// const SoilSequestration = () => {
    
-    const [after,setAfter]=useState(null);
-    const [afterPreviewURL,setAfterPreviewURL]=useState(null);
-    
-    const handleBeforeFileChange=(e)=>{
-        const file = e.target.files[0];
-        if (file && file.type === "application/pdf") {
-            setBefore(file);
-            setBeforePreviewURL(URL.createObjectURL(file)); // Create preview URL
-        } else {
-            alert("Please upload a valid PDF file.");
-        }   
-    }
+//     const [ws, setWs] = useState(null);
 
-    const handleAfterFileChange=(e)=>{
-        const file = e.target.files[0];
-        if (file && file.type === "application/pdf") {
-            setAfter(file);
-            setAfterPreviewURL(URL.createObjectURL(file)); // Create preview URL
-        } else {
-            alert("Please upload a valid PDF file.");
-        }   
-    }
+//     useEffect(() => {
+//         const socket = new WebSocket("ws://localhost:8080");
+//         setWs(socket);
 
-    const handleSubmit=async(e)=>{
-        e.preventDefault();
-        const formData=new FormData();
-        formData.append("before",before);
-        formData.append("after",after);
+//         socket.onopen = () => console.log("WebSocket connected!");
+//         socket.onerror = (error) => console.error("WebSocket Error:", error);
+//         socket.onclose = () => console.log("WebSocket Disconnected!");
 
-        try{
-            const response=await fetch("http://localhost:8000/api/upload-energy-savings",{
-                method: "POST",
-                body: formData,
-                headers: {
-                    Accept: "application/json",
-                },
-            }); 
-        }catch(error){
-            console.log(error);
-        }
-    }
+//         return () => socket.close();
+//     }, []);
+// };
 
-    return (
-        <div>
-            <form onSubmit={handleSubmit}>
-                {/*soil test report*/}
-                <h3>Upload Evidence</h3>
-
-                <div class="evidence-section">
-                    <div class="before">
-                       <p>Before :</p>
-                       <iframe src={beforePreviewURL} width="50%" height="300px"></iframe>
-                       <br/>
-                       <input type="file" onChange={handleBeforeFileChange}/>
-                    </div>
-                    <div class="after">
-                        <p>After :</p>
-                        <iframe src={afterPreviewURL} width="50%" height="300px"></iframe>
-                        <br/>
-                        <input type="file" onChange={handleAfterFileChange}/>
-                    </div>
-                </div>
-                
-                {/*submit*/}
-                <br/>
-                <button type="submit">Submit</button>
-            </form>
-        </div>
-    );
-};
-
-const SoilSequestration = () => {
-   
-    const [ws, setWs] = useState(null);
-
-    useEffect(() => {
-        const socket = new WebSocket("ws://localhost:8080");
-        setWs(socket);
-
-        socket.onopen = () => console.log("WebSocket connected!");
-        socket.onerror = (error) => console.error("WebSocket Error:", error);
-        socket.onclose = () => console.log("WebSocket Disconnected!");
-
-        return () => socket.close();
-    }, []);
-};
-
-const generatorAddress="0xa6bbd00f2a119b4eC73255fBee52A7FFE2157F65";
-const mintTokensContractAddress="0x64e99a1aD71eA852E85B097Bd393cEE48253eAcB";
-const multiValidatorContractAddress="0x60985Ffd4783CC8e83A8b2BAa7b5e13b1AAa3E60";
-const ammContractAddress="0xCE3520feDFf525459FB5246261a6674D72B0B8b9";
+const generatorAddress="0x3110FC11C252adEa669591Ee671C34b64BF4428A";
+const mintTokensContractAddress="0x286cda23E9f59e12BB57BBEED70738C29cBc75F4";
+const multiValidatorContractAddress="0x2c84019759932E25C2Ca9Ee4beae81fE7473CCd7";
+const ammContractAddress="0xE2856d3C6B66b3EDF6D059409c2Ea1c76474f986";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -305,7 +222,8 @@ const ConsumerDashboard=(props)=>{
             const contract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
             const listings=await contract.methods.fetchListings().call();
 
-            const formattedListings=listings.map((listing)=>({
+            const formattedListings=listings.map((listing,index)=>({
+                index,
                 seller: listing.seller,
                 amount: web3.utils.fromWei(listing.amount,"ether"),
                 pricePerCCT: web3.utils.fromWei(listing.pricePerCCT,"ether"),
@@ -327,7 +245,7 @@ const ConsumerDashboard=(props)=>{
     const buyCCT=async()=>{
         const ammContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
         await ammContract.methods
-            .buyTokens(selectedListing.seller,buyAmount)
+            .buyTokens(selectedListing.index,buyAmount)
             .send({from: consumerAddress});
     }   
 
@@ -367,9 +285,9 @@ const ConsumerDashboard=(props)=>{
                 <button onClick={fetchFromAMM}>Fetch from AMM</button>
                 <div id="cct-listings"> 
                     {listings.length>0?
-                        (listings.map((listing)=>
+                        (listings.map((listing,idx)=>
                             (
-                                <div className="listing-item" onClick={() => setSelectedListing(listing)}>
+                                <div key={idx} className="listing-item" onClick={() => {setSelectedListing(listing);console.log(listing)}}>
                                     <p>Seller: {listing.seller}</p>
                                     <p>Amount: {listing.amount} CCT</p>
                                     <p>Price: {listing.pricePerCCT} ETH per CCT</p>
@@ -425,6 +343,8 @@ const ValidatorDashboard=(props)=>{
     const [validatorAddress,setValidatorAddress]=useState(null);  
     const [fileCID,setFileCID]=useState("");   
     const [showIframe, setShowIframe] = useState(false);
+    const [status,setStatus]=useState("");
+    const [credits,setCredits]=useState("");
     
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -453,7 +373,7 @@ const ValidatorDashboard=(props)=>{
     }
 
     //view evidence
-    const viewEvidence=()=>{
+    const viewEvidence=async()=>{
         
     }
 
@@ -461,8 +381,18 @@ const ValidatorDashboard=(props)=>{
     const verifyEvidence=async()=>{
         try{
             const response=await fetch(`http://localhost:8000/api/verify-evidence`,{
-                
+                method:"POST",
+                headers:{
+                    Accept:"application/json"
+                }
             });
+
+            if(response.ok){
+                const data=await response.json();
+                console.log(data);
+                setStatus(data.status);
+                setCredits(data.credits);
+            }
         }catch(error){
             console.log(error);
         }
@@ -477,7 +407,7 @@ const ValidatorDashboard=(props)=>{
     
             const contract = new web3.eth.Contract(MultiValidatorABI.abi, multiValidatorContractAddress);
             await contract.methods
-                .voteToApprove(generatorAddress, 5)
+                .voteToApprove(generatorAddress, credits)
                 .send({ from: validatorAddress});
     
         } catch (error) {
@@ -518,20 +448,15 @@ const ValidatorDashboard=(props)=>{
                 <h3>Wallet Address : {validatorAddress}</h3>
 
                     <div className="soil-evidence-section">
-                        {/*disply evidence details*/}
-                        <br/>
-                        <p>Evidence CID : {fileCID}</p>
-                        
                         {/*view evidence*/}
                         <br/>
+                        <p>Evidence CID : {fileCID}</p>
                         <button onClick={viewEvidence}>View Evidence</button>
-                    
-                        <br/><br/>
+                        <br/>
                         {showIframe ? 
                         (
                             <>
                                 <iframe 
-                                    src={`https://ipfs.io/ipfs/${fileCID}`} 
                                     width="50%" 
                                     height="300px">
                                 </iframe>
@@ -546,9 +471,11 @@ const ValidatorDashboard=(props)=>{
                             </>
                         )}
 
-                        <br/>
-                        <button onClick={verifyEvidence}>Verify Evidence</button>   
-                        <p>Credits to Allot : </p>
+                        {/**verify the evidence */}
+                        <br/><br/>
+                        <button onClick={verifyEvidence}>Verify Evidence</button>  
+                        <p>Verfication Status : {status}</p> 
+                        <p>Credits to Allot : {credits} </p>
                         
                         <br/>
                         <button onClick={approveEvidence}>Approve Evidence</button>

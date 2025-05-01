@@ -31,31 +31,44 @@ contract AMM{
 
         mintContract.transferFrom(msg.sender, address(this), scaledAmount);
 
-        listings.push(Listing({
-            seller: msg.sender,
-            amount: scaledAmount,
-            pricePerCCT: scaledPrice
-        }));
+        // Check if seller already has a listing
+        // bool updated = false;
+        // for (uint256 i = 0; i < listings.length; i++) {
+        //     if (listings[i].seller == msg.sender) {
+        //         listings[i].amount += scaledAmount;
+        //         listings[i].pricePerCCT = scaledPrice;
+        //         updated = true;
+        //         break;
+        //     }
+        // }
+
+        //if(!updated){
+            listings.push(Listing({
+                seller: msg.sender,
+                amount: scaledAmount,
+                pricePerCCT: scaledPrice
+            }));
+        //}
     }
 
     function fetchListings() external view returns (Listing[] memory){
         return listings;
     }
 
-    function buyTokens(address _gen, uint256 _amount) external payable{
+    function buyTokens(uint256 index, uint256 _amount) external payable{
         uint256 scaledBuyAmount=_amount*CCT_DECIMALS;
 
         //find the listing //issue part
-        uint256 listingIdx=type(uint256).max;
-        for(uint256 i=0;i<listings.length;i++){
-            if(listings[i].seller== _gen){
-                listingIdx=i;
-                break;
-            }
-        }
+        // uint256 listingIdx=type(uint256).max;
+        // for(uint256 i=0;i<listings.length;i++){
+        //     if(listings[i].seller== _gen){
+        //         listingIdx=i;
+        //         break;
+        //     }
+        // }
 
         //check if the seller has enough cct
-        Listing storage listing = listings[listingIdx];
+        Listing storage listing = listings[index];
         //require(listing.amount>=scaledBuyAmount,"Seller does not have enough CCT");
         
         //transfer cct
@@ -64,7 +77,7 @@ contract AMM{
 
         //send eth
         uint256 totalETH=(scaledBuyAmount * listing.pricePerCCT)/CCT_DECIMALS;
-        payable(_gen).transfer(totalETH);
+        payable(listing.seller).transfer(totalETH);
     }
 
     //retire tokens

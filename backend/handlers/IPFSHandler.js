@@ -29,10 +29,4 @@ const uploadEvidence = async (req, res) => {
     } 
 };
 
-
-const verifyEvidence=async(req,res)=>{
-
-}
-
 exports.uploadEvidence=uploadEvidence;
-exports.verifyEvidence=verifyEvidence;
