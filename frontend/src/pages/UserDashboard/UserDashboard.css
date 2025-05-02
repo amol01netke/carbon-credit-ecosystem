@@ -40,34 +40,17 @@
 }
 
 .evidence-section {
-    display: flex;
-    gap: 20px;
-    padding: 20px;
-    justify-content: center;
-    align-items: flex-start;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin: 20px 0;
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
 }
 
-.evidence-section div {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.validator-view{
+.gen-section{
     padding: 20px 20px;
-    display: flex;
-    align-items: center;
 }
 
-.validator-view div{
-    margin: 20px 20px;
-    flex: 1;
+.con-section{
+    padding: 20px 20px;
+    background-color: #ccc;
+    display:flex;
+    flex-direction: column;
 }

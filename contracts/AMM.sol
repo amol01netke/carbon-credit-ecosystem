@@ -81,8 +81,8 @@ contract AMM{
     }
 
     //retire tokens
-    function burnTokens(uint256 _amount) public{
-        uint256 scaledAmount = _amount * CCT_DECIMALS;
-        mintContract.burnFrom(msg.sender,scaledAmount);
-    }
+    // function burnTokens(uint256 _amount) public{
+    //     uint256 scaledAmount = _amount * CCT_DECIMALS;
+    //     mintContract.burnFrom(msg.sender,scaledAmount);
+    // }
 }

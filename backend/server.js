@@ -1,6 +1,7 @@
 const express = require("express");
 const server = express();
 const mongoose = require("mongoose");
+const {sendNftReq}= require('./websocket.js');
 
 //middleware
 const bodyParser=require("body-parser");
@@ -34,6 +35,11 @@ server.post("/api/verify-evidence",(req,res)=>{
     status:"verified",
     credits: 5
   });
+});
+server.post("/api/retire-cct",(req,res)=>{
+  const {address,amount}=req.body;
+
+  sendNftReq(address,amount);
 });
 
 //connect with database and start the server

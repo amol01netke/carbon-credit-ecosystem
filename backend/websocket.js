@@ -17,9 +17,19 @@ const notifyValidators = (cid) => {
     console.log("Notifying Validators : ",cid);
     validators.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ cid }));
+            ws.send(JSON.stringify({type:"generator", cid }));
         }
     });
 };
 
+const sendNftReq=(address,amount)=>{
+    console.log("NFT request...");
+    validators.forEach((ws)=>{
+        if(ws.readyState===WebSocket.OPEN){
+            ws.send(JSON.stringify({type:"consumer",address,amount}));
+        }
+    });
+}
+
 module.exports = { notifyValidators };
+module.exports = {sendNftReq};

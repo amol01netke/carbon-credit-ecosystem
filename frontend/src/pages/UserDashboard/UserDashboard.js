@@ -23,10 +23,10 @@ import ammABI from "../../abis/AMM.json";
 //     }, []);
 // };
 
-const generatorAddress="0x3110FC11C252adEa669591Ee671C34b64BF4428A";
-const mintTokensContractAddress="0x286cda23E9f59e12BB57BBEED70738C29cBc75F4";
-const multiValidatorContractAddress="0x2c84019759932E25C2Ca9Ee4beae81fE7473CCd7";
-const ammContractAddress="0xE2856d3C6B66b3EDF6D059409c2Ea1c76474f986";
+const generatorAddress="0x89Ade109b69959fb7990E1Dc57e6B569a6c9f167";
+const mintTokensContractAddress="0x53b628aD08aFB03cf8087D2F2E7b97cD9a864eCF";
+const multiValidatorContractAddress="0xeacA54DdFf90F7E99c7a6D1793Db5383a174495a";
+const ammContractAddress="0x7Eb7210ea84439FcFb0138d50691Ee2310375F15";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -187,7 +187,7 @@ const ConsumerDashboard=(props)=>{
     const [buyAmount,setBuyAmount]=useState(0); 
     const [cctReceived,setCCTReceived]=useState("");
     const [retireAmount,setRetireAmount]=useState("");
-   
+
     //wallet connection
     const handleConnectWallet=async()=>{
         try{
@@ -260,8 +260,32 @@ const ConsumerDashboard=(props)=>{
 
     //retire
     const retireCredits=async()=>{
-        const burnContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
-        await burnContract.methods.burnTokens(retireAmount).send({from:consumerAddress});
+        // const burnContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
+        // await burnContract.methods.burnTokens(retireAmount).send({from:consumerAddress});
+
+        // const burnContract=new web3.eth.Contract(MultiValidatorABI.abi,multiValidatorContractAddress);
+        // await burnContract.methods.burnTokens(consumerAddress,retireAmount).send({from:consumerAddress})
+
+        try{
+            const response=await fetch("http://localhost:8000/api/retire-cct",{
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    address: consumerAddress,
+                    amount: retireAmount
+                })
+            });
+
+            if(response.ok){
+                const data = await response.json();
+                console.log(data);
+            }
+        }catch(error){
+            console.log(error);
+        }
     }
 
     //logout
@@ -346,6 +370,9 @@ const ValidatorDashboard=(props)=>{
     const [status,setStatus]=useState("");
     const [credits,setCredits]=useState("");
     
+    const [receivedAddress,setReceviedAddress]=useState("");
+    const [amount,setAmount]=useState("");
+
     //wallet connection
     const handleConnectWallet=async()=>{
         try{
@@ -429,13 +456,23 @@ const ValidatorDashboard=(props)=>{
             socket.onmessage = async (event) => {
                 const data = JSON.parse(event.data);
                 console.log(data);
-                setFileCID(data.cid);
+
+                if(data.type==="generator")
+                    setFileCID(data.cid);
+                else if(data.type==="consumer"){
+                    setReceviedAddress(data.address);
+                    setAmount(data.amount);
+                }
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
         };
         initializeWebSocket();
     }, []);
+
+    const approveNFT=async()=>{
+
+    }
 
     return (
         <React.Fragment>
@@ -447,39 +484,47 @@ const ValidatorDashboard=(props)=>{
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
 
-                    <div className="soil-evidence-section">
-                        {/*view evidence*/}
-                        <br/>
-                        <p>Evidence CID : {fileCID}</p>
-                        <button onClick={viewEvidence}>View Evidence</button>
-                        <br/>
-                        {showIframe ? 
-                        (
-                            <>
-                                <iframe 
-                                    width="50%" 
-                                    height="300px">
-                                </iframe>
-                            </>
-                        ) :
-                        (
-                            <>
-                                <iframe 
-                                    width="50%" 
-                                    height="300px">
-                                </iframe>
-                            </>
-                        )}
+                    <div className="evidence-section">
+                        <div className="gen-section">
+                            {/*view evidence*/}
+                            <br/>
+                            <p>Evidence CID : {fileCID}</p>
+                            <button onClick={viewEvidence}>View Evidence</button>
+                            <br/>
+                            {showIframe ? 
+                            (
+                                <>
+                                    <iframe 
+                                        width="50%" 
+                                        height="300px">
+                                    </iframe>
+                                </>
+                            ) :
+                            (
+                                <>
+                                    <iframe 
+                                        width="50%" 
+                                        height="300px">
+                                    </iframe>
+                                </>
+                            )}
 
-                        {/**verify the evidence */}
-                        <br/><br/>
-                        <button onClick={verifyEvidence}>Verify Evidence</button>  
-                        <p>Verfication Status : {status}</p> 
-                        <p>Credits to Allot : {credits} </p>
-                        
-                        <br/>
-                        <button onClick={approveEvidence}>Approve Evidence</button>
+                            {/**verify the evidence */}
+                            <br/><br/>
+                            <button onClick={verifyEvidence}>Verify Evidence</button>  
+                            <p>Verfication Status : {status}</p> 
+                            <p>Credits to Allot : {credits} </p>
+                            
+                            <br/>
+                            <button onClick={approveEvidence}>Approve Evidence</button>
+                        </div>
 
+                        <div className="con-section">
+                            Consumer Address : {receivedAddress}
+                            Retire Amount : {amount}
+
+                            <button onClick={approveNFT}>Approve NFT</button>
+                        </div>
                     </div>
                 
                 {/*logout*/}
