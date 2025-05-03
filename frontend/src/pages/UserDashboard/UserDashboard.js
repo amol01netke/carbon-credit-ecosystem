@@ -23,10 +23,11 @@ import ammABI from "../../abis/AMM.json";
 //     }, []);
 // };
 
-const generatorAddress="0x89Ade109b69959fb7990E1Dc57e6B569a6c9f167";
-const mintTokensContractAddress="0x53b628aD08aFB03cf8087D2F2E7b97cD9a864eCF";
-const multiValidatorContractAddress="0xeacA54DdFf90F7E99c7a6D1793Db5383a174495a";
-const ammContractAddress="0x7Eb7210ea84439FcFb0138d50691Ee2310375F15";
+const generatorAddress="0x337852Da0A794f91C00A50f808df3910Ee56E442";
+const consumerAddress="0x4297B11a8dd13CD7415662aB80C63DB1F2907b0B";
+const mintTokensContractAddress="0x36EeA420C838F9cfb2d41b42C3b084F7416D0591";
+const multiValidatorContractAddress="0x4514697abAeE3A614F2884e07bA984bd965df4F0";
+const ammContractAddress="0xD823D4194792409c133CB1DE71BF05bFc7E5D918";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -457,12 +458,10 @@ const ValidatorDashboard=(props)=>{
                 const data = JSON.parse(event.data);
                 console.log(data);
 
-                if(data.type==="generator")
-                    setFileCID(data.cid);
-                else if(data.type==="consumer"){
+                if(data.type==="consumer"){
                     setReceviedAddress(data.address);
                     setAmount(data.amount);
-                }
+                }else setFileCID(data.cid);
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
@@ -471,7 +470,18 @@ const ValidatorDashboard=(props)=>{
     }, []);
 
     const approveNFT=async()=>{
+        // const burnContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
+        // await burnContract.methods.burnTokens(retireAmount).send({from:consumerAddress});
+        try{
+            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            const validatorAddress = accounts[0];
+            console.log(validatorAddress);
 
+            const burnContract=new web3.eth.Contract(MultiValidatorABI.abi,multiValidatorContractAddress);
+            await burnContract.methods.burnTokens(consumerAddress,amount).send({from:validatorAddress});
+        }catch(error){
+            console.log(error);
+        }        
     }
 
     return (

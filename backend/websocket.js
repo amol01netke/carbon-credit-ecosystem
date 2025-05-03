@@ -17,7 +17,7 @@ const notifyValidators = (cid) => {
     console.log("Notifying Validators : ",cid);
     validators.forEach((ws) => {
         if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({type:"generator", cid }));
+            ws.send(JSON.stringify({ type:"generator", cid }));
         }
     });
 };
