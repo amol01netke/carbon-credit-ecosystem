@@ -37,7 +37,7 @@ const GeneratorDashboard=(props)=>{
     const [genAddress,setGenAddress]=useState("");
     const [file, setFile] = useState(null);
     const [previewURL, setPreviewURL] = useState(null);
-    const [tokensReceived, setTokensReceived]=useState(0);
+    const [tokensReceived, setTokensReceived]=useState("");
     const [listAmount,setListAmount]=useState("");
     const [pricePerCCT,setPricePerCCT]=useState("");
    
@@ -521,48 +521,50 @@ const ValidatorDashboard=(props)=>{
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
 
-                    <div className="evidence-section">
-                        <div className="gen-section">
-                            {/*view evidence*/}
-                            <br/>
-                            <p>Evidence CID : {fileCID}</p>
-                            <button onClick={viewEvidence}>View Evidence</button>
-                            <br/>
-                            {showIframe ? 
-                            (
-                                <>
-                                    <iframe 
-                                        width="50%" 
-                                        height="300px">
-                                    </iframe>
-                                </>
-                            ) :
-                            (
-                                <>
-                                    <iframe 
-                                        width="50%" 
-                                        height="300px">
-                                    </iframe>
-                                </>
-                            )}
+                <div className="evidence-section">
+                    <div className="gen-section">
+                        {/*view evidence*/}
+                        <br/>
+                        <p>Evidence CID : {fileCID}</p>
+                        <button onClick={viewEvidence}>View Evidence</button>
+                        <br/>
+                        {showIframe ? 
+                        (
+                            <>
+                                <iframe 
+                                    width="50%" 
+                                    height="300px">
+                                </iframe>
+                            </>
+                        ) :
+                        (
+                            <>
+                                <iframe 
+                                    width="50%" 
+                                    height="300px">
+                                </iframe>
+                            </>
+                        )}
 
-                            {/**verify the evidence */}
-                            <br/><br/>
-                            <button onClick={verifyEvidence}>Verify Evidence</button>  
-                            <p>Verfication Status : {status}</p> 
-                            <p>Credits to Allot : {credits} </p>
+                        {/**verify the evidence */}
+                        <br/><br/>
+                        <button onClick={verifyEvidence}>Verify Evidence</button>  
+                        <p>Verfication Status : {status}</p> 
+                        <p>Credits to Allot : {credits} </p>
                             
-                            <br/>
-                            <button onClick={approveEvidence}>Approve Evidence</button>
-                        </div>
-
-                        <div className="con-section">
-                            Consumer Address : {receivedAddress}
-                            Retire Amount : {amount}
-
-                            <button onClick={approveNFT}>Approve NFT</button>
-                        </div>
+                        <br/>
+                        <button onClick={approveEvidence}>Approve Evidence</button>
                     </div>
+
+                    <div className="con-section">
+                        <br/>
+                        <p>Consumer Address : {receivedAddress}</p>
+                        <p>Retire Amount : {amount}</p>
+                        
+                        <br/>
+                        <button onClick={approveNFT}>Approve NFT</button>
+                    </div>
+                </div>
                 
                 {/*logout*/}
                 <br/>

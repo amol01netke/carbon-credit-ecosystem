@@ -1,7 +1,7 @@
 const ipfsClient = require('ipfs-http-client');
 const fs = require('fs/promises');
 const { notifyValidators } = require('../websocket.js'); // Import WebSocket function
-const ipfs = ipfsClient( 'http://127.0.0.1:5001' );
+const ipfs = ipfsClient( { url: 'http://127.0.0.1:5001' } );
 
 const uploadEvidence = async (req, res) => {
     const file = req.file;

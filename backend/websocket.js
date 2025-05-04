@@ -31,5 +31,4 @@ const sendNftReq=(address,amount)=>{
     });
 }
 
-module.exports = { notifyValidators };
-module.exports = {sendNftReq};
+module.exports = { notifyValidators , sendNftReq};
