@@ -1,6 +1,7 @@
 const MultiValidator = artifacts.require("MultiValidator");
 const MintTokens=artifacts.require("MintTokens");
 const AMM=artifacts.require("AMM");
+const MintNFT=artifacts.require("MintNFT");
 
 module.exports = async function (deployer, network, accounts) {
     if (!accounts[0]) {
@@ -20,8 +21,13 @@ module.exports = async function (deployer, network, accounts) {
     const mintTokensInstance = await MintTokens.deployed();
     const mintTokensAddress = mintTokensInstance.address;
 
+    //mint crc/nft
+    await deployer.deploy(MintNFT);
+    const mintNFTInstance = await MintNFT.deployed();
+    const mintNFTAddress = mintNFTInstance.address;
+
     //multivalidator
-    await deployer.deploy(MultiValidator, validatorAddress, mintTokensAddress, { from: validatorAddress, value: initialFunding });
+    await deployer.deploy(MultiValidator, validatorAddress, mintTokensAddress, mintNFTAddress, { from: validatorAddress, value: initialFunding });
     
     //amm
     await deployer.deploy(AMM,consumerAddress,mintTokensAddress,{from:consumerAddress,value:initialFunding});

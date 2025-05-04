@@ -6,6 +6,7 @@ import getWeb3 from "../../handlers/Web3Handler";
 import MultiValidatorABI from "../../abis/MutliValidator.json";
 import MintTokensABI from "../../abis/MintTokens.json";
 import ammABI from "../../abis/AMM.json";
+import nftABI from "../../abis/MintNFT.json";
 
 // const SoilSequestration = () => {
    
@@ -23,11 +24,13 @@ import ammABI from "../../abis/AMM.json";
 //     }, []);
 // };
 
-const generatorAddress="0x337852Da0A794f91C00A50f808df3910Ee56E442";
-const consumerAddress="0x4297B11a8dd13CD7415662aB80C63DB1F2907b0B";
-const mintTokensContractAddress="0x36EeA420C838F9cfb2d41b42C3b084F7416D0591";
-const multiValidatorContractAddress="0x4514697abAeE3A614F2884e07bA984bd965df4F0";
-const ammContractAddress="0xD823D4194792409c133CB1DE71BF05bFc7E5D918";
+const generatorAddress="0x6aa43f7C5c64764AbAe537dd43377C855E44d3A1";
+const consumerAddress="0x041A09A8f1E764fEdD2efAd357fDED2F039e7283";
+
+const mintTokensContractAddress="0x5A2e97CD276210129631Dc6654ab08462Fbca0b3";
+const nftContractAddress="0xB681681E57ee690eAFDbf60d602AFf4A7Bb19DEa";
+const multiValidatorContractAddress="0x00c74c028D402f97c87aD76818Fca15E01d64C33";
+const ammContractAddress="0x22D7Bf325a2D72a1B08295929A5AC01B7EE6144B";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -188,6 +191,7 @@ const ConsumerDashboard=(props)=>{
     const [buyAmount,setBuyAmount]=useState(0); 
     const [cctReceived,setCCTReceived]=useState("");
     const [retireAmount,setRetireAmount]=useState("");
+    const [crc,setCRC]=useState("");
 
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -289,6 +293,19 @@ const ConsumerDashboard=(props)=>{
         }
     }
 
+    //crc
+    const viewCRC=async()=>{
+        const nftContract=new web3.eth.Contract(nftABI.abi,nftContractAddress);
+        const crcData=await nftContract.methods.getCRC(consumerAddress).call();
+        
+        console.log(crcData);
+        setCRC({
+            owner: crcData[0],
+            burnAmount: web3.utils.fromWei(crcData[1], "ether"),
+            timestamp: crcData[2],
+        });
+    }
+
     //logout
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
@@ -355,6 +372,16 @@ const ConsumerDashboard=(props)=>{
                     onChange={(e) => setRetireAmount(e.target.value)}
                 />
                 <button onClick={retireCredits} type="button">Retire Credits</button>
+                
+                {/**NFT */}
+                <br/><br/>
+                <button onClick={viewCRC}>View Carbon Removal Certificate</button>
+                {crc && (
+                    <div>
+                        <p>Owner: {crc.owner}</p>
+                        <p>Amount Retired: {crc.burnAmount} CCT</p>
+                    </div>
+                )}
 
                 {/*logout*/}
                 <br/><br/>

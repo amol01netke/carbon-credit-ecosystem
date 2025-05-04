@@ -6,6 +6,10 @@ interface IMintContract{
     function burnFrom(address consumer,uint256 amount) external;
 }
 
+interface IMintNFT{
+    function mintCRC(address consumer, uint256 amount) external;
+}
+
 contract MultiValidator {
     address public validator; // Validator
     address payable public receiver; // Generator   
@@ -17,13 +21,15 @@ contract MultiValidator {
     uint256 public approveNFT=0; 
     address payable public consumer_receiver;
     uint256 public retireAmount;
+    address public nftContract;
 
     uint256 constant CCT_DECIMALS = 10**18; // Scaling factor
 
-    constructor(address _validator, address _mint) payable {
+    constructor(address _validator, address _mint, address _nftContract) payable {
         require(_validator != address(0), "Validator address cannot be zero");
         validator = _validator;
         mint=_mint;
+        nftContract=_nftContract;
     }
 
     function burnTokens(address payable _consumer,uint256 _amount) public {
@@ -38,6 +44,7 @@ contract MultiValidator {
             IMintContract(mint).burnFrom(_consumer, scaledAmount);
 
             //NFT MINT OVER HERE
+            IMintNFT(nftContract).mintCRC(_consumer, scaledAmount);
 
             //reset
             approveNFT=0;
