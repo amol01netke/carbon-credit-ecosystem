@@ -1,45 +1,22 @@
 const express = require("express");
 const server = express();
 const mongoose = require("mongoose");
-const {sendNftReq}= require('./websocket.js');
-
-//middleware
+const {sendNftReq, notifyValidators}= require('./websocket.js');
 const bodyParser=require("body-parser");
 const cors = require("cors");
-
-//ipfs
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
-
-//controllers
 const userController = require("./controllers/user-controller");
-const ipfsHandler=require("./handlers/IPFSHandler");
 
 server.use(bodyParser.json());
 server.use(cors());
 
-//login
 server.post("/api/login-generator", userController.loginGenerator);
 server.post("/api/login-consumer", userController.loginConsumer);
 server.post("/api/login-validator", userController.loginValidator);
-
-//registration
 server.post("/api/register-generator", userController.registerGenerator);
 server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
-
-//evidence
-server.post("/api/upload-evidence",upload.single("file"),ipfsHandler.uploadEvidence);
-server.post("/api/verify-evidence",(req,res)=>{
-  res.json({
-    status:"verified",
-    credits: 5
-  });
-});
-
 server.post("/api/retire-cct",(req,res)=>{
   const {address,amount}=req.body;
-
   sendNftReq(address,amount);
 });
 

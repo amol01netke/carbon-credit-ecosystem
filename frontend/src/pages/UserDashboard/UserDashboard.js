@@ -24,22 +24,21 @@ import nftABI from "../../abis/MintNFT.json";
 //     }, []);
 // };
 
-const generatorAddress="0x6aa43f7C5c64764AbAe537dd43377C855E44d3A1";
-const consumerAddress="0x041A09A8f1E764fEdD2efAd357fDED2F039e7283";
+const generatorAddress="0xa5F17c0faF6b30CfDA442bf4bA45cfa7D3301E4a";
+const consumerAddress="0xC4849aAfBD8dB5ED6C2f5268Da163BDac22133DC";
 
-const mintTokensContractAddress="0x5A2e97CD276210129631Dc6654ab08462Fbca0b3";
-const nftContractAddress="0xB681681E57ee690eAFDbf60d602AFf4A7Bb19DEa";
-const multiValidatorContractAddress="0x00c74c028D402f97c87aD76818Fca15E01d64C33";
-const ammContractAddress="0x22D7Bf325a2D72a1B08295929A5AC01B7EE6144B";
+const mintTokensContractAddress="0xD19726702Bc43B44b7B7407b537Fa25072b47a08";
+const nftContractAddress="0x0eD38dA3125fD203fE40Fb2d0f5C33B5d7e33F46";
+const multiValidatorContractAddress="0xBC2C0b98e64c708D79C3cfc0753b8e75B3F53745";
+const ammContractAddress="0xc8943Dbc6E80d4bb1a9BF35CC7Aa729eb91C9402";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [genAddress,setGenAddress]=useState("");
-    const [file, setFile] = useState(null);
-    const [previewURL, setPreviewURL] = useState(null);
     const [tokensReceived, setTokensReceived]=useState("");
     const [listAmount,setListAmount]=useState("");
     const [pricePerCCT,setPricePerCCT]=useState("");
+    const [ndvi,setNDVI]=useState(0);
    
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -66,49 +65,41 @@ const GeneratorDashboard=(props)=>{
             console.error("Error connecting wallet!");   
         } 
     }
-       
-    //report
-    const handleFileChange=(e)=>{
-        const file = e.target.files[0];
-        if (file && file.type === "application/pdf") {
-            setFile(file);
-            setPreviewURL(URL.createObjectURL(file));
-        } else {
-            alert("Please upload a valid PDF file.");
-        }
-    }
-
+     
     //submit
     const handleSubmit=async(e)=>{
         e.preventDefault();
 
+        const fileInput = e.target.querySelector('input[type="file"]');
+        const file = fileInput.files[0];
         if (!file) {
-            alert("Please select a file to upload.");
+            alert("Please upload an image.");
             return;
         }
-
+    
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("image", file);
 
-        try {
-            const response = await fetch("http://localhost:8000/api/upload-evidence", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    Accept: "application/json",
-                },
+        try{
+            const response=await fetch("http://localhost:5000/api/calculate-ndvi",{
+                method:"POST",
+                body:formData
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Response : ", data);
-            } else {
-                const error = await response.json();
-                console.error("Error:", error);
+            if(response.ok){
+                const data=await response.json();
+                console.log(data);
+                setNDVI(data.ndvi);
+            }else {
+                console.error("NDVI calculation failed.");
             }
-        } catch (error) {
-            console.error("Request Failed:", error);
+        }catch(error){
+            console.log(error);
         }
+    }
+
+    const send=async()=>{
+
     }
     
     //fetch CCT Balance
@@ -152,15 +143,17 @@ const GeneratorDashboard=(props)=>{
                       
             {/*evidence upload*/}
             <br/>
-            <p>Upload Carbon Reduction Report : </p>
             <form onSubmit={handleSubmit}>
-                <input type="file" onChange={handleFileChange}/>
+                <input type="file"/>
                 <br/>
-                <iframe src={previewURL} width="50%" height="300px"></iframe>
-                <br/>
-                <button type="submit">Submit</button>
+                <button type="submit">Calculate NDVI</button>
+                <p>NDVI : {ndvi}</p>
             </form>
 
+            {/** */}
+            <br/>
+            <button type="button" onClick={send}>Send for Approval</button>
+            
             {/* Fetch Tokens */}
             <br />
             <button onClick={fetchTokensReceived}>View CCT Received</button>
@@ -265,12 +258,6 @@ const ConsumerDashboard=(props)=>{
 
     //retire
     const retireCredits=async()=>{
-        // const burnContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
-        // await burnContract.methods.burnTokens(retireAmount).send({from:consumerAddress});
-
-        // const burnContract=new web3.eth.Contract(MultiValidatorABI.abi,multiValidatorContractAddress);
-        // await burnContract.methods.burnTokens(consumerAddress,retireAmount).send({from:consumerAddress})
-
         try{
             const response=await fetch("http://localhost:8000/api/retire-cct",{
                 method: "POST",
@@ -393,11 +380,8 @@ const ConsumerDashboard=(props)=>{
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null);  
-    const [fileCID,setFileCID]=useState("");   
-    const [showIframe, setShowIframe] = useState(false);
     const [status,setStatus]=useState("");
     const [credits,setCredits]=useState("");
-    
     const [receivedAddress,setReceviedAddress]=useState("");
     const [amount,setAmount]=useState("");
 
@@ -427,19 +411,16 @@ const ValidatorDashboard=(props)=>{
         } 
     }
 
-    //view evidence
-    const viewEvidence=async()=>{
-        
-    }
-
     //verify evidence
     const verifyEvidence=async()=>{
         try{
-            const response=await fetch(`http://localhost:8000/api/verify-evidence`,{
+            const response=await fetch(`http://localhost:5000/api/verify-evidence`,{
                 method:"POST",
                 headers:{
+                    "Content-Type": "application/json",
                     Accept:"application/json"
-                }
+                },
+                // body:JSON.stringify({cid:fileCID})
             });
 
             if(response.ok){
@@ -488,7 +469,7 @@ const ValidatorDashboard=(props)=>{
                 if(data.type==="consumer"){
                     setReceviedAddress(data.address);
                     setAmount(data.amount);
-                }else setFileCID(data.cid);
+                }
             };
             
             socket.onclose = () => console.log("WebSocket Disconnected");
@@ -497,8 +478,6 @@ const ValidatorDashboard=(props)=>{
     }, []);
 
     const approveNFT=async()=>{
-        // const burnContract=new web3.eth.Contract(ammABI.abi,ammContractAddress);
-        // await burnContract.methods.burnTokens(retireAmount).send({from:consumerAddress});
         try{
             const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
             const validatorAddress = accounts[0];
@@ -523,29 +502,6 @@ const ValidatorDashboard=(props)=>{
 
                 <div className="evidence-section">
                     <div className="gen-section">
-                        {/*view evidence*/}
-                        <br/>
-                        <p>Evidence CID : {fileCID}</p>
-                        <button onClick={viewEvidence}>View Evidence</button>
-                        <br/>
-                        {showIframe ? 
-                        (
-                            <>
-                                <iframe 
-                                    width="50%" 
-                                    height="300px">
-                                </iframe>
-                            </>
-                        ) :
-                        (
-                            <>
-                                <iframe 
-                                    width="50%" 
-                                    height="300px">
-                                </iframe>
-                            </>
-                        )}
-
                         {/**verify the evidence */}
                         <br/><br/>
                         <button onClick={verifyEvidence}>Verify Evidence</button>  
