@@ -30,13 +30,24 @@ def calculate_ndvi():
 
     return jsonify({"ndvi": round(mean_ndvi, 4)})
 
-@app.route('/api/verify-evidence', methods=['POST'])
-def verify_evidence():
+@app.route('/api/estimate-co2',methods=['POST'])
+def estimate_co2():
+    data = request.get_json()
+    ndvi = data.get('ndvi')  # Extract the NDVI value from request body
+
+    print(f"Received NDVI: {ndvi}")  # Optional: log to console
+
+    # Ensure NDVI is a non-negative float
+    safe_ndvi = max(0.0, float(ndvi))
+
+    # Scale NDVI to an integer CO₂ sequestration value (0–10), then ensure minimum 1
+    estimated_co2 = max(1, round(safe_ndvi * 10))
+
     return jsonify({
-        "status": "verified",
-        "credits": 5,
+        "amount": estimated_co2,
+        "credits": estimated_co2
     })
-    
+
 @app.route('/')
 def index():
     return "Server is running"

@@ -24,13 +24,13 @@ import nftABI from "../../abis/MintNFT.json";
 //     }, []);
 // };
 
-const generatorAddress="0xa5F17c0faF6b30CfDA442bf4bA45cfa7D3301E4a";
-const consumerAddress="0xC4849aAfBD8dB5ED6C2f5268Da163BDac22133DC";
+const generatorAddress="0x7cdA3da019009e5bC9A5dB029cBcDC61af5aeFc6";
+const consumerAddress="0x7cdA3da019009e5bC9A5dB029cBcDC61af5aeFc6";
 
-const mintTokensContractAddress="0xD19726702Bc43B44b7B7407b537Fa25072b47a08";
-const nftContractAddress="0x0eD38dA3125fD203fE40Fb2d0f5C33B5d7e33F46";
-const multiValidatorContractAddress="0xBC2C0b98e64c708D79C3cfc0753b8e75B3F53745";
-const ammContractAddress="0xc8943Dbc6E80d4bb1a9BF35CC7Aa729eb91C9402";
+const mintTokensContractAddress="0x2B33601eDB4D581c3c7347Bf5155f113626fa79C";
+const nftContractAddress="0x2A69BB6156f21fAbF5693325699DB24DA0AF5D9b";
+const multiValidatorContractAddress="0x29974158f2b51cECe88fEE931DA74031E107EAb6";
+const ammContractAddress="0xBecA04798B30e6e4f6741A3A52FE363fA18CA5CE";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -38,6 +38,8 @@ const GeneratorDashboard=(props)=>{
     const [tokensReceived, setTokensReceived]=useState("");
     const [listAmount,setListAmount]=useState("");
     const [pricePerCCT,setPricePerCCT]=useState("");
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewURL,setPreviewURL]=useState(null)
     const [ndvi,setNDVI]=useState(0);
    
     //wallet connection
@@ -66,6 +68,15 @@ const GeneratorDashboard=(props)=>{
         } 
     }
      
+    //file change
+    const handleFileChange=(e)=>{
+        const file = e.target.files[0];
+        if (file) {
+          setSelectedFile(file);
+          setPreviewURL(URL.createObjectURL(file));
+        }
+    }
+
     //submit
     const handleSubmit=async(e)=>{
         e.preventDefault();
@@ -98,8 +109,24 @@ const GeneratorDashboard=(props)=>{
         }
     }
 
-    const send=async()=>{
+    const sendNDVI=async()=>{
+        try{
+            const response=await fetch("http://localhost:8000/api/send-ndvi",{
+                method:"POST",
+                headers:{
+                    Accept:"application/json",
+                    "Content-type":"application/json"
+                },
+                body:JSON.stringify({address:genAddress,value:ndvi})
+            });
 
+            if(response.ok){
+                const data=await response.json();
+                console.log(data);
+            }
+        }catch(error){
+            console.log(error);
+        }
     }
     
     //fetch CCT Balance
@@ -141,21 +168,28 @@ const GeneratorDashboard=(props)=>{
             <br/>
             <h3>Wallet Address : {genAddress}</h3>
                       
-            {/*evidence upload*/}
+            {/*data upload*/}
             <br/>
             <form onSubmit={handleSubmit}>
-                <input type="file"/>
+                <p>Upload Satellite Image : </p>
+                <input type="file" onChange={handleFileChange}/>
+                
+                <br/>
+                <iframe
+                    src={previewURL}
+                    style={{ width: '300px', height: '300px'}}
+                />
+
                 <br/>
                 <button type="submit">Calculate NDVI</button>
                 <p>NDVI : {ndvi}</p>
             </form>
 
-            {/** */}
-            <br/>
-            <button type="button" onClick={send}>Send for Approval</button>
+            {/**send for approval */}
+            <button type="button" onClick={sendNDVI}>Send NDVI</button>
             
             {/* Fetch Tokens */}
-            <br />
+            <br /><br/>
             <button onClick={fetchTokensReceived}>View CCT Received</button>
             <br/>
             Tokens received : {tokensReceived}
@@ -380,10 +414,12 @@ const ConsumerDashboard=(props)=>{
 const ValidatorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
     const [validatorAddress,setValidatorAddress]=useState(null);  
-    const [status,setStatus]=useState("");
     const [credits,setCredits]=useState("");
-    const [receivedAddress,setReceviedAddress]=useState("");
+    const [receivedAddress,setReceivedAddress]=useState("");
     const [amount,setAmount]=useState("");
+    const [addressGen,setAddressGen]=useState("");
+    const [ndvi,setNDVI]=useState(0);
+    const [sequestrationAmount,setSequestrationAmount]=useState("");
 
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -409,29 +445,6 @@ const ValidatorDashboard=(props)=>{
         }catch(error){
             console.error("Error connecting wallet!");   
         } 
-    }
-
-    //verify evidence
-    const verifyEvidence=async()=>{
-        try{
-            const response=await fetch(`http://localhost:5000/api/verify-evidence`,{
-                method:"POST",
-                headers:{
-                    "Content-Type": "application/json",
-                    Accept:"application/json"
-                },
-                // body:JSON.stringify({cid:fileCID})
-            });
-
-            if(response.ok){
-                const data=await response.json();
-                console.log(data);
-                setStatus(data.status);
-                setCredits(data.credits);
-            }
-        }catch(error){
-            console.log(error);
-        }
     }
 
     //approve evidence
@@ -467,8 +480,11 @@ const ValidatorDashboard=(props)=>{
                 console.log(data);
 
                 if(data.type==="consumer"){
-                    setReceviedAddress(data.address);
+                    setReceivedAddress(data.address);
                     setAmount(data.amount);
+                }else if(data.type==="generator"){
+                    setAddressGen(data.address);
+                    setNDVI(data.value);
                 }
             };
             
@@ -476,6 +492,27 @@ const ValidatorDashboard=(props)=>{
         };
         initializeWebSocket();
     }, []);
+
+    const estimateCO2Sequestration=async()=>{
+        try{
+            const response=await fetch(`http://localhost:5000/api/estimate-co2`,{
+                method:"POST",
+                headers:{
+                    Accept:"application/json",
+                    "Content-type":"application/json",
+                },
+                body:JSON.stringify({ndvi})
+            });
+
+            if(response.ok){
+                const data=await response.json();
+                setSequestrationAmount(data.amount);
+                setCredits(data.credits);
+            }
+        }catch(error){
+            console.log(error);
+        }
+    }
 
     const approveNFT=async()=>{
         try{
@@ -502,14 +539,16 @@ const ValidatorDashboard=(props)=>{
 
                 <div className="evidence-section">
                     <div className="gen-section">
-                        {/**verify the evidence */}
-                        <br/><br/>
-                        <button onClick={verifyEvidence}>Verify Evidence</button>  
-                        <p>Verfication Status : {status}</p> 
-                        <p>Credits to Allot : {credits} </p>
-                            
                         <br/>
-                        <button onClick={approveEvidence}>Approve Evidence</button>
+                        <p>Generator Address : {addressGen}</p>
+                        <p>NDVI : {ndvi}</p>
+
+                        <br/>
+                        <button type="button" onClick={estimateCO2Sequestration}>Estimate C02 Sequestration</button>
+                        <p>Sequestration Amount : {sequestrationAmount} tons</p>
+                        
+                        <br/>
+                        <button onClick={approveEvidence}>Approve CCT</button>
                     </div>
 
                     <div className="con-section">

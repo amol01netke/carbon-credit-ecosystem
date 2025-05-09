@@ -13,7 +13,13 @@ wss.on("connection", (ws) => {
     });
 });
 
-const notifyValidators = () => {
+const notifyValidators = (address,value) => {
+    console.log("NDVI request...");
+    users.forEach((ws)=>{
+        if(ws.readyState===WebSocket.OPEN){
+            ws.send(JSON.stringify({type:"generator",address,value}));
+        }
+    });
 };
 
 const sendNftReq=(address,amount)=>{
