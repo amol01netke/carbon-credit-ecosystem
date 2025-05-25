@@ -8,6 +8,10 @@ import MintTokensABI from "../../abis/MintTokens.json";
 import ammABI from "../../abis/AMM.json";
 import nftABI from "../../abis/MintNFT.json";
 
+import { MapContainer, TileLayer, Rectangle, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-defaulticon-compatibility';
+
 // const SoilSequestration = () => {
    
 //     const [ws, setWs] = useState(null);
@@ -24,13 +28,32 @@ import nftABI from "../../abis/MintNFT.json";
 //     }, []);
 // };
 
-const generatorAddress="0x7cdA3da019009e5bC9A5dB029cBcDC61af5aeFc6";
-const consumerAddress="0x7cdA3da019009e5bC9A5dB029cBcDC61af5aeFc6";
+const SelectRegion = ({ setBounds }) => {
+  useMapEvents({
+    click(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      // Generate a small rectangle around the click
+      const offset = 0.05;
+      const newBounds = [
+        [lat - offset, lng - offset],
+        [lat + offset, lng + offset]
+      ];
+      setBounds(newBounds);
+      console.log(newBounds)
+    }
+  });
+  return null;
+};
 
-const mintTokensContractAddress="0x2B33601eDB4D581c3c7347Bf5155f113626fa79C";
-const nftContractAddress="0x2A69BB6156f21fAbF5693325699DB24DA0AF5D9b";
-const multiValidatorContractAddress="0x29974158f2b51cECe88fEE931DA74031E107EAb6";
-const ammContractAddress="0xBecA04798B30e6e4f6741A3A52FE363fA18CA5CE";
+
+const generatorAddress="0x28109bC7239F6E0F1D1D7A9b942Ad1fBEe7f0289";
+const consumerAddress="0xDCf5C9f81c535b4820a82f8464bc9EB6C6481f20";
+
+const mintTokensContractAddress="0x8681a60E6525eF9D37Ae916D207b87dE961e88A6";
+const nftContractAddress="0x3594f7c6bb5eF901DE085BFec4dbcaF032cf1c5A";
+const multiValidatorContractAddress="0x166B38F64d1E3F8f0d21A2AaD50972731a1d80F6";
+const ammContractAddress="0x4266fA169DFdfbbd9F33275c21126cff5E191b28";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -41,6 +64,10 @@ const GeneratorDashboard=(props)=>{
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewURL,setPreviewURL]=useState(null)
     const [ndvi,setNDVI]=useState(0);
+    const [bounds, setBounds] = useState([
+        [20.5937, 78.9629], // southwest (default: center of India)
+        [20.7037, 79.0629]  // northeast
+        ]);
    
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -78,36 +105,60 @@ const GeneratorDashboard=(props)=>{
     }
 
     //submit
-    const handleSubmit=async(e)=>{
-        e.preventDefault();
+    // const handleSubmit=async(e)=>{
+    //     e.preventDefault();
 
-        const fileInput = e.target.querySelector('input[type="file"]');
-        const file = fileInput.files[0];
-        if (!file) {
-            alert("Please upload an image.");
-            return;
-        }
+    //     const fileInput = e.target.querySelector('input[type="file"]');
+    //     const file = fileInput.files[0];
+    //     if (!file) {
+    //         alert("Please upload an image.");
+    //         return;
+    //     }
     
-        const formData = new FormData();
-        formData.append("image", file);
+    //     const formData = new FormData();
+    //     formData.append("image", file);
 
-        try{
-            const response=await fetch("http://localhost:5000/api/calculate-ndvi",{
-                method:"POST",
-                body:formData
+    //     try{
+    //         const response=await fetch("http://localhost:5000/api/calculate-ndvi",{
+    //             method:"POST",
+    //             body:formData
+    //         });
+
+    //         if(response.ok){
+    //             const data=await response.json();
+    //             console.log(data);
+    //             setNDVI(data.ndvi);
+    //         }else {
+    //             console.error("NDVI calculation failed.");
+    //         }
+    //     }catch(error){
+    //         console.log(error);
+    //     }
+    // }
+
+    const handleNDVICalcFromMap = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/api/calculate-ndvi", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                bounds: bounds // send SW and NE corners
+            })
             });
 
-            if(response.ok){
-                const data=await response.json();
-                console.log(data);
-                setNDVI(data.ndvi);
-            }else {
-                console.error("NDVI calculation failed.");
+            if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            setNDVI(data.ndvi);
+            } else {
+            console.error("NDVI calculation failed.");
             }
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            console.error("Error calling NDVI API:", error);
         }
-    }
+    };
 
     const sendNDVI=async()=>{
         try{
@@ -168,7 +219,7 @@ const GeneratorDashboard=(props)=>{
             <br/>
             <h3>Wallet Address : {genAddress}</h3>
                       
-            {/*data upload*/}
+            {/*data upload*
             <br/>
             <form onSubmit={handleSubmit}>
                 <p>Upload Satellite Image : </p>
@@ -183,7 +234,25 @@ const GeneratorDashboard=(props)=>{
                 <br/>
                 <button type="submit">Calculate NDVI</button>
                 <p>NDVI : {ndvi}</p>
-            </form>
+            </form>*/}
+
+            <br/>
+            <p>Select a region on map:</p>
+            <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: "400px", width: "100%" }}>
+            <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+            />
+            <Rectangle
+                bounds={bounds}
+                pathOptions={{ color: 'green' }}
+                draggable={true}
+            />
+            <SelectRegion setBounds={setBounds} />
+            </MapContainer>
+            <br/>
+            <button onClick={handleNDVICalcFromMap}>Calculate NDVI</button>
+            <p>NDVI: {ndvi}</p>
 
             {/**send for approval */}
             <button type="button" onClick={sendNDVI}>Send NDVI</button>
