@@ -47,13 +47,13 @@ const SelectRegion = ({ setBounds }) => {
 };
 
 
-const generatorAddress="0x28109bC7239F6E0F1D1D7A9b942Ad1fBEe7f0289";
-const consumerAddress="0xDCf5C9f81c535b4820a82f8464bc9EB6C6481f20";
+const generatorAddress="0xD445701887C0512bB47908e7FC9b50d39aA464CD";
+const consumerAddress="0x1B1cC4f7825B3B3A3264EDf021D2D11b6Eda413e";
 
-const mintTokensContractAddress="0x8681a60E6525eF9D37Ae916D207b87dE961e88A6";
-const nftContractAddress="0x3594f7c6bb5eF901DE085BFec4dbcaF032cf1c5A";
-const multiValidatorContractAddress="0x166B38F64d1E3F8f0d21A2AaD50972731a1d80F6";
-const ammContractAddress="0x4266fA169DFdfbbd9F33275c21126cff5E191b28";
+const mintTokensContractAddress="0xB9DF10AA1FcCCa5d3346e422C6eB55302Dd9173d";
+const nftContractAddress="0xc8A963150a7a58d991337ef94a306Ca025f4892E";
+const multiValidatorContractAddress="0xFEEBE4670c95b18062b4fBEda3b52aE0810A2b3F";
+const ammContractAddress="0xCB0F77BF1344a177CD9aeC0Cf8b3D8E2bB8b6E75";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -168,7 +168,7 @@ const GeneratorDashboard=(props)=>{
                     Accept:"application/json",
                     "Content-type":"application/json"
                 },
-                body:JSON.stringify({address:genAddress,value:ndvi})
+                body:JSON.stringify({address:genAddress,value:ndvi,coords:bounds})
             });
 
             if(response.ok){
@@ -489,6 +489,8 @@ const ValidatorDashboard=(props)=>{
     const [addressGen,setAddressGen]=useState("");
     const [ndvi,setNDVI]=useState(0);
     const [sequestrationAmount,setSequestrationAmount]=useState("");
+    const [coords,setCoords]=useState("");
+    const [status,setStatus]=useState("not verified");
 
     //wallet connection
     const handleConnectWallet=async()=>{
@@ -554,6 +556,8 @@ const ValidatorDashboard=(props)=>{
                 }else if(data.type==="generator"){
                     setAddressGen(data.address);
                     setNDVI(data.value);
+                    setCoords(data.coords);
+                    console.log(coords);
                 }
             };
             
@@ -561,6 +565,31 @@ const ValidatorDashboard=(props)=>{
         };
         initializeWebSocket();
     }, []);
+
+    const verifyNDVI=async()=>{
+        try {
+            const response = await fetch("http://localhost:5000/api/calculate-ndvi", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                bounds: coords // send SW and NE corners
+            })
+            });
+
+            if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            if(data.ndvi===ndvi)
+                setStatus("verified");
+            } else {
+            console.error("NDVI calculation failed.");
+            }
+        } catch (error) {
+            console.error("Error calling NDVI API:", error);
+        }
+    }
 
     const estimateCO2Sequestration=async()=>{
         try{
@@ -611,6 +640,11 @@ const ValidatorDashboard=(props)=>{
                         <br/>
                         <p>Generator Address : {addressGen}</p>
                         <p>NDVI : {ndvi}</p>
+                        <p>Co-ordinates : {coords}</p>
+
+                        <br/>
+                        <button type="button" onClick={verifyNDVI}>Verify NDVI</button>
+                        <p>Status : {status}</p>
 
                         <br/>
                         <button type="button" onClick={estimateCO2Sequestration}>Estimate C02 Sequestration</button>

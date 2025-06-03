@@ -18,8 +18,8 @@ server.post("/api/register-consumer", userController.registerConsumer);
 server.post("/api/register-validator", userController.registerValidator);
 
 server.post("/api/send-ndvi",(req,res)=>{
-  const {address,value}=req.body;
-  notifyValidators(address,value);
+  const {address,value,coords}=req.body;
+  notifyValidators(address,value,coords);
 });
 server.post("/api/retire-cct",(req,res)=>{
   const {address,amount}=req.body;

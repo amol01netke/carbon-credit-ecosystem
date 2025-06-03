@@ -13,11 +13,11 @@ wss.on("connection", (ws) => {
     });
 });
 
-const notifyValidators = (address,value) => {
+const notifyValidators = (address,value,coords) => {
     console.log("NDVI request...");
     users.forEach((ws)=>{
         if(ws.readyState===WebSocket.OPEN){
-            ws.send(JSON.stringify({type:"generator",address,value}));
+            ws.send(JSON.stringify({type:"generator",address,value,coords}));
         }
     });
 };
