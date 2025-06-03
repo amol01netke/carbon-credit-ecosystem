@@ -239,16 +239,16 @@ const GeneratorDashboard=(props)=>{
             <br/>
             <p>Select a region on map:</p>
             <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: "400px", width: "100%" }}>
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-            />
-            <Rectangle
-                bounds={bounds}
-                pathOptions={{ color: 'green' }}
-                draggable={true}
-            />
-            <SelectRegion setBounds={setBounds} />
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                />
+                <Rectangle
+                    bounds={bounds}
+                    pathOptions={{ color: 'green' }}
+                    draggable={true}
+                />
+                <SelectRegion setBounds={setBounds} />
             </MapContainer>
             <br/>
             <button onClick={handleNDVICalcFromMap}>Calculate NDVI</button>
