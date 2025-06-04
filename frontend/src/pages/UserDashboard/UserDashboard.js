@@ -178,7 +178,7 @@ const GeneratorDashboard=(props)=>{
         
             {/** */}
             <br/>
-            <p>Select a region on map:</p>
+            <p>Select a region on map : </p>
             
             <div className="map-container">
                 <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: "400px", width: "100%" }}>
@@ -197,28 +197,29 @@ const GeneratorDashboard=(props)=>{
 
             <br/>
             <button className="fun-btn" onClick={handleNDVICalcFromMap}>Calculate NDVI</button>
-            <p>NDVI: {ndvi}</p>
+            <p>NDVI : {ndvi}</p>
 
             {/**send for approval */}
             <br/>
             <button  className="fun-btn" type="button" onClick={sendNDVI}>Send NDVI</button>
             
             {/* Fetch Tokens */}
-            <br /><br/>
-            <button  className="fun-btn" onClick={fetchTokensReceived}>View CCT Received</button>
+            <br/><br/>
+            <button  className="fun-btn" onClick={fetchTokensReceived}>View CCT</button>
             <br/>
-            Tokens received : {tokensReceived}
+            CCT : {tokensReceived}
             
             {/**list on AMM */}
             <br/><br/>
             <div className="amm-listing">
-                <input type="number" placeholder="Amount to List" 
+                <input type="number" placeholder="CCT amount to list" 
                     value={listAmount} onChange={(e)=>setListAmount(e.target.value)}/>
-                <input type="number" placeholder="Price per CCT" 
+                <input type="number" placeholder="ETH per CCT" 
                     value={pricePerCCT} onChange={(e)=>setPricePerCCT(e.target.value)} />
+            
+                <button className="fun-btn" onClick={listOnAMM}>List on AMM</button>
             </div>
-            <br/>
-            <button className="fun-btn" onClick={listOnAMM}>List on AMM</button>
+            
            
 
             {/*logout*/}    
@@ -360,19 +361,20 @@ const ConsumerDashboard=(props)=>{
                 <br/>
                 <button className="connect-btn" onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
-                <h3>Wallet Address : {consumerAddress}</h3>
+                <p>Wallet Address : {consumerAddress}</p>
 
                 {/**fetch from amm */}
                 <br/>
-                <button onClick={fetchFromAMM}>Fetch from AMM</button>
+                <button className="fun-btn" onClick={fetchFromAMM}>Fetch from AMM</button>
+                <br/>
                 <div id="cct-listings"> 
                     {listings.length>0?
                         (listings.map((listing,idx)=>
                             (
                                 <div key={idx} className="listing-item" onClick={() => {setSelectedListing(listing);console.log(listing)}}>
-                                    <p>Seller: {listing.seller}</p>
-                                    <p>Amount: {listing.amount} CCT</p>
-                                    <p>Price: {listing.pricePerCCT} ETH per CCT</p>
+                                    <p>Seller : {listing.seller}</p>
+                                    <p>Amount : {listing.amount} CCT</p>
+                                    <p>Price : {listing.pricePerCCT} ETH per CCT</p>
                                 </div>
                             ))
                         )
@@ -384,47 +386,51 @@ const ConsumerDashboard=(props)=>{
                 
                 {selectedListing && (
                     <div className="buy-section">
-                        <p>From: {selectedListing.seller}</p>
-                        <p>CCT available : {selectedListing.amount}</p>
-                        <p>Price per CCT: {selectedListing.pricePerCCT} ETH</p>
+                        <p>From : {selectedListing.seller}</p>
+                        <p>CCT : {selectedListing.amount}</p>
+                        <p>Price : {selectedListing.pricePerCCT} ETH per CCT</p>
                         <input 
                             type="number" 
                             placeholder="Enter amount" 
                             value={buyAmount} 
                             onChange={(e) => setBuyAmount(e.target.value)} 
                         />
-                        <p>ETH Required: {buyAmount * selectedListing.pricePerCCT}</p>
+                        <p>ETH required: {buyAmount * selectedListing.pricePerCCT}</p>
                         <button onClick={buyCCT}>Buy CCT</button>
                     </div>
                 )}
 
                 {/**balance display */}
                 <br/>
-                <button onClick={displayCCT} type="button">Display CCT</button>
+                <button className="fun-btn" onClick={displayCCT} type="button">View CCT</button>
                 <p>CCT : {cctReceived}</p>
 
                 {/**retre credits */}
                 <br/>
-                <input 
-                    type="number" 
-                    placeholder="Enter amount"
-                    value={retireAmount} 
-                    onChange={(e) => setRetireAmount(e.target.value)}
-                />
-                <button onClick={retireCredits} type="button">Retire Credits</button>
-                
+                <div className="retire-sec">
+                    <input 
+                        type="number" 
+                        placeholder="CCT amount to retire"
+                        value={retireAmount} 
+                        onChange={(e) => setRetireAmount(e.target.value)}
+                    />
+                    <button className="fun-btn" onClick={retireCredits} type="button">Retire CCT</button>
+                </div>
+
                 {/**NFT */}
-                <br/><br/>
-                <button onClick={viewCRC}>View Carbon Removal Certificate</button>
+                <br/>
+                <button className="fun-btn" onClick={viewCRC}>View CRC</button>
+                <br/>
                 {crc && (
                     <div>
-                        <p>Owner: {crc.owner}</p>
-                        <p>Amount Retired: {crc.burnAmount} CCT</p>
+                        <b>CARBON REMOVAL CERTIFICATE</b>
+                        <p>Owner : {crc.owner}</p>
+                        <p>Amount retired : {crc.burnAmount} CCT</p>
                     </div>
                 )}
 
                 {/*logout*/}
-                <br/><br/>
+                <br/>
                 <button className="logout-btn" onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
@@ -507,6 +513,7 @@ const ValidatorDashboard=(props)=>{
                     setAddressGen(data.address);
                     setNDVI(data.value);
                     setCoords(data.coords);
+                    setStatus("not verified");
                     console.log(coords);
                 }
             };
@@ -529,12 +536,14 @@ const ValidatorDashboard=(props)=>{
             });
 
             if (response.ok) {
-            const data = await response.json();
-            console.log(data);
-            if(data.ndvi===ndvi)
-                setStatus("verified");
-            } else {
-            console.error("NDVI calculation failed.");
+                const data = await response.json();
+                console.log(data);
+                
+                if(data.ndvi===ndvi){
+                    setStatus("verified");
+                } else {
+                    console.error("NDVI calculation failed.");
+                }
             }
         } catch (error) {
             console.error("Error calling NDVI API:", error);
@@ -583,34 +592,31 @@ const ValidatorDashboard=(props)=>{
                 <br/>
                 <button className="connect-btn" onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
-                <h3>Wallet Address : {validatorAddress}</h3>
+                <p>Wallet Address : {validatorAddress}</p>
 
                 <div className="evidence-section">
                     <div className="gen-section">
-                        <br/>
                         <p>Generator Address : {addressGen}</p>
                         <p>NDVI : {ndvi}</p>
-                        <p>Co-ordinates : {coords}</p>
 
                         <br/>
-                        <button type="button" onClick={verifyNDVI}>Verify NDVI</button>
+                        <button className="fun-btn" type="button" onClick={verifyNDVI}>Verify NDVI</button>
                         <p>Status : {status}</p>
 
                         <br/>
-                        <button type="button" onClick={estimateCO2Sequestration}>Estimate C02 Sequestration</button>
-                        <p>Sequestration Amount : {sequestrationAmount} tons</p>
+                        <button className="fun-btn" type="button" onClick={estimateCO2Sequestration}>Estimate C02 Sequestration</button>
+                        <p>Sequestration amount : {sequestrationAmount} tons</p>
                         
                         <br/>
-                        <button onClick={approveEvidence}>Approve CCT</button>
+                        <button className="fun-btn" onClick={approveEvidence}>Approve CCT</button>
                     </div>
 
                     <div className="con-section">
-                        <br/>
                         <p>Consumer Address : {receivedAddress}</p>
                         <p>Retire Amount : {amount}</p>
                         
                         <br/>
-                        <button onClick={approveNFT}>Approve NFT</button>
+                        <button className="fun-btn" onClick={approveNFT}>Approve CRC</button>
                     </div>
                 </div>
                 
