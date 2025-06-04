@@ -4,6 +4,7 @@
     justify-content: center;
     align-items: center;
     text-align: center;
+    background-color: #eee;
 }
 
 .select-project-type{
@@ -49,4 +50,80 @@
 .con-section {
     background-color: white;
     padding: 20px;
+}
+
+.logout-btn{
+    width: fit-content;
+    border: none;
+    color: white;
+    background-color: #FF6347;
+    border-radius: 10px 10px;
+    padding: 10px 10px;
+    font-size: medium;
+}
+
+.logout-btn:hover{
+    cursor: pointer;
+    background-color: red;
+}
+
+.connect-btn{
+    width: fit-content;
+    border: none;
+    color: white;
+    background-color: green;
+    border-radius: 10px 10px;
+    padding: 10px 10px;
+    font-size: medium;
+}
+
+.connect-btn:hover{
+    cursor: pointer;
+    background-color: #228B22;
+}
+
+.fun-btn{
+    width: fit-content;
+    border: none;
+    color: white;
+    background-color: #333;
+    border-radius: 10px 10px;
+    padding: 10px 10px;
+    font-size: medium;
+}
+
+.fun-btn:hover{
+    background-color: #555;
+    cursor: pointer;
+}
+
+.map-container{
+    width: 50vw;
+    margin: 0 auto; /* centers horizontally */
+    display: block;
+}
+
+.amm-listing{
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+}
+
+.amm-listing input{
+    font-size: medium;
+    border-radius: 5px;
+    padding: 5px ;
+    border: none;
+    background-color: #ccc;
+}
+
+@media screen and (max-width:600px) {
+    .map-container{
+        width: 80vw;
+        margin: 0 auto; /* centers horizontally */
+        display: block;
+    }
+    .evidence-section{
+        display: block;
+    }    
 }

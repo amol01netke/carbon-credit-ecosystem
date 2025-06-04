@@ -30,4 +30,11 @@
 .login-btn:hover,
 .register-btn:hover{
     cursor: pointer;
+    background-color: #228B22;
+}
+
+@media screen and (max-width:600px) {    
+    .select-user{
+        width: 50vw;
+    }
 }

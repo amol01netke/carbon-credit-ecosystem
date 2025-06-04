@@ -47,13 +47,13 @@ const SelectRegion = ({ setBounds }) => {
 };
 
 
-const generatorAddress="0xD445701887C0512bB47908e7FC9b50d39aA464CD";
-const consumerAddress="0x1B1cC4f7825B3B3A3264EDf021D2D11b6Eda413e";
+const generatorAddress="0x8cff038760fcDd4e8FA08d3FE0e3e12beD24F8E0";
+const consumerAddress="0xaD5f9d3d09b02B66EB4C8c15d5c1a3C3ef1E18Fe";
 
-const mintTokensContractAddress="0xB9DF10AA1FcCCa5d3346e422C6eB55302Dd9173d";
-const nftContractAddress="0xc8A963150a7a58d991337ef94a306Ca025f4892E";
-const multiValidatorContractAddress="0xFEEBE4670c95b18062b4fBEda3b52aE0810A2b3F";
-const ammContractAddress="0xCB0F77BF1344a177CD9aeC0Cf8b3D8E2bB8b6E75";
+const mintTokensContractAddress="0x36F1364566515DAe9C192Abba69da886FB34BeA4";
+const nftContractAddress="0xc67DC44399184026A5bb91Ab9eB04d5B1dA128b6";
+const multiValidatorContractAddress="0xE9b06955d04B2203331eF478AF71a6fFF392aFfF";
+const ammContractAddress="0x16Ae1B0aC4f5D9e631289F0a2EF782054da51a2D";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -61,11 +61,9 @@ const GeneratorDashboard=(props)=>{
     const [tokensReceived, setTokensReceived]=useState("");
     const [listAmount,setListAmount]=useState("");
     const [pricePerCCT,setPricePerCCT]=useState("");
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [previewURL,setPreviewURL]=useState(null)
     const [ndvi,setNDVI]=useState(0);
     const [bounds, setBounds] = useState([
-        [20.5937, 78.9629], // southwest (default: center of India)
+        [20.5937, 78.9629], // southwest 
         [20.7037, 79.0629]  // northeast
         ]);
    
@@ -95,47 +93,6 @@ const GeneratorDashboard=(props)=>{
         } 
     }
      
-    //file change
-    const handleFileChange=(e)=>{
-        const file = e.target.files[0];
-        if (file) {
-          setSelectedFile(file);
-          setPreviewURL(URL.createObjectURL(file));
-        }
-    }
-
-    //submit
-    // const handleSubmit=async(e)=>{
-    //     e.preventDefault();
-
-    //     const fileInput = e.target.querySelector('input[type="file"]');
-    //     const file = fileInput.files[0];
-    //     if (!file) {
-    //         alert("Please upload an image.");
-    //         return;
-    //     }
-    
-    //     const formData = new FormData();
-    //     formData.append("image", file);
-
-    //     try{
-    //         const response=await fetch("http://localhost:5000/api/calculate-ndvi",{
-    //             method:"POST",
-    //             body:formData
-    //         });
-
-    //         if(response.ok){
-    //             const data=await response.json();
-    //             console.log(data);
-    //             setNDVI(data.ndvi);
-    //         }else {
-    //             console.error("NDVI calculation failed.");
-    //         }
-    //     }catch(error){
-    //         console.log(error);
-    //     }
-    // }
-
     const handleNDVICalcFromMap = async () => {
         try {
             const response = await fetch("http://localhost:5000/api/calculate-ndvi", {
@@ -214,66 +171,59 @@ const GeneratorDashboard=(props)=>{
             <h1>GENERATOR DASHBOARD</h1>
                 
             {/*wallet connection*/}
-            <br/><br/>
-            <button onClick={handleConnectWallet}>Connect Wallet</button>
             <br/>
-            <h3>Wallet Address : {genAddress}</h3>
-                      
-            {/*data upload*
+            <button className="connect-btn" onClick={handleConnectWallet}>Connect Wallet</button>
             <br/>
-            <form onSubmit={handleSubmit}>
-                <p>Upload Satellite Image : </p>
-                <input type="file" onChange={handleFileChange}/>
-                
-                <br/>
-                <iframe
-                    src={previewURL}
-                    style={{ width: '300px', height: '300px'}}
-                />
-
-                <br/>
-                <button type="submit">Calculate NDVI</button>
-                <p>NDVI : {ndvi}</p>
-            </form>*/}
-
+            <p>Wallet Address : {genAddress}</p>
+        
+            {/** */}
             <br/>
             <p>Select a region on map:</p>
-            <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: "400px", width: "100%" }}>
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-                />
-                <Rectangle
-                    bounds={bounds}
-                    pathOptions={{ color: 'green' }}
-                    draggable={true}
-                />
-                <SelectRegion setBounds={setBounds} />
-            </MapContainer>
+            
+            <div className="map-container">
+                <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ height: "400px", width: "100%" }}>
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                    />
+                    <Rectangle
+                        bounds={bounds}
+                        pathOptions={{ color: 'green' }}
+                        draggable={true}
+                    />
+                    <SelectRegion setBounds={setBounds} />
+                </MapContainer>
+            </div>
+
             <br/>
-            <button onClick={handleNDVICalcFromMap}>Calculate NDVI</button>
+            <button className="fun-btn" onClick={handleNDVICalcFromMap}>Calculate NDVI</button>
             <p>NDVI: {ndvi}</p>
 
             {/**send for approval */}
-            <button type="button" onClick={sendNDVI}>Send NDVI</button>
+            <br/>
+            <button  className="fun-btn" type="button" onClick={sendNDVI}>Send NDVI</button>
             
             {/* Fetch Tokens */}
             <br /><br/>
-            <button onClick={fetchTokensReceived}>View CCT Received</button>
+            <button  className="fun-btn" onClick={fetchTokensReceived}>View CCT Received</button>
             <br/>
             Tokens received : {tokensReceived}
             
             {/**list on AMM */}
             <br/><br/>
-            <input type="number" placeholder="Amount to List" 
-                value={listAmount} onChange={(e)=>setListAmount(e.target.value)}/>
-            <input type="number" placeholder="Price per CCT" 
-                value={pricePerCCT} onChange={(e)=>setPricePerCCT(e.target.value)} />
-            <button onClick={listOnAMM}>List on AMM</button>
+            <div className="amm-listing">
+                <input type="number" placeholder="Amount to List" 
+                    value={listAmount} onChange={(e)=>setListAmount(e.target.value)}/>
+                <input type="number" placeholder="Price per CCT" 
+                    value={pricePerCCT} onChange={(e)=>setPricePerCCT(e.target.value)} />
+            </div>
+            <br/>
+            <button className="fun-btn" onClick={listOnAMM}>List on AMM</button>
+           
 
             {/*logout*/}    
             <br/><br/>
-            <button onClick={handleLogout}>Logout</button>
+            <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
     </React.Fragment>
     );
@@ -408,7 +358,7 @@ const ConsumerDashboard=(props)=>{
                 <h1>CONSUMER DASHBOARD</h1>
                 {/*wallet connection*/}
                 <br/>
-                <button onClick={handleConnectWallet}>Connect Wallet</button>
+                <button className="connect-btn" onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
                 <h3>Wallet Address : {consumerAddress}</h3>
 
@@ -475,7 +425,7 @@ const ConsumerDashboard=(props)=>{
 
                 {/*logout*/}
                 <br/><br/>
-                <button onClick={handleLogout}>Logout</button>
+                <button className="logout-btn" onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
 }
@@ -631,7 +581,7 @@ const ValidatorDashboard=(props)=>{
                 <h1>VALIDATOR DASHBOARD</h1>
                 {/*wallet connection*/}
                 <br/>
-                <button onClick={handleConnectWallet}>Connect Wallet</button>
+                <button className="connect-btn" onClick={handleConnectWallet}>Connect Wallet</button>
                 <br/>
                 <h3>Wallet Address : {validatorAddress}</h3>
 
@@ -666,7 +616,7 @@ const ValidatorDashboard=(props)=>{
                 
                 {/*logout*/}
                 <br/>
-                <button onClick={handleLogout}>Logout</button>
+                <button className="logout-btn" onClick={handleLogout}>Logout</button>
             </div>
         </React.Fragment>);
 }

@@ -38,5 +38,11 @@
 
 .form-submit:hover{
     cursor: pointer;
+    background-color: #228B22;
 }
 
+@media screen and (max-width:600px) {    
+    .form-ip{
+        width: 50vw;
+    }
+}
