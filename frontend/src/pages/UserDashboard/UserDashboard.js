@@ -50,10 +50,10 @@ const SelectRegion = ({ setBounds }) => {
 const generatorAddress="0x3203c58ED078946344FA963b07821466D0dCd6d8";
 const consumerAddress="0x4fc5C35ED39eBb3d4756C63f0cEf5d4dFA0bad2A";
 
-const mintTokensContractAddress="0x54051A54A0d358735a54353A03E50Cbe17056e3c";
-const nftContractAddress="0x8b7cE17B7EA3D323765848C2927bd7BBDBD9FA36";
-const multiValidatorContractAddress="0xCdb43660A3dBfF6e14ea5A61CD8E83aAd953b3Bc";
-const ammContractAddress="0xc53B387FB1e713e4A1dfBD56C4bCC5F3e8e80030";
+const mintTokensContractAddress="0x65B2AfF27A2731Ad2FEC32B4126E85Cc6d9aC6fe";
+const nftContractAddress="0xde283BC564eF20f58f9d227f8485A9FB452aE99B";
+const multiValidatorContractAddress="0x4a1415dEfcdA0B4bcb52183f2dFAdF75A969e711";
+const ammContractAddress="0x89606cBd509a1f642e1868c79A8718B2A1eA43D6";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -118,7 +118,7 @@ const GeneratorDashboard=(props)=>{
     };
 
     const sendNDVI=async()=>{
-        try{
+       try{
             const response=await fetch("http://localhost:8000/api/send-ndvi",{
                 method:"POST",
                 headers:{
@@ -131,6 +131,7 @@ const GeneratorDashboard=(props)=>{
             if(response.ok){
                 const data=await response.json();
                 console.log(data);
+                setNDVI("0");
             }
         }catch(error){
             console.log(error);
@@ -476,18 +477,28 @@ const ValidatorDashboard=(props)=>{
 
     //approve evidence
     const approveEvidence = async () => {
-        try {
-            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-            const validatorAddress = accounts[0];
-            console.log(validatorAddress);
-    
-            const contract = new web3.eth.Contract(MultiValidatorABI.abi, multiValidatorContractAddress);
-            await contract.methods
-                .voteToApprove(generatorAddress, credits)
-                .send({ from: validatorAddress});
-    
-        } catch (error) {
-            console.error("Error approving evidence:", error);
+       if(status==="verified" && credits!=""){
+            try {
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                const validatorAddress = accounts[0];
+                console.log(validatorAddress);
+        
+                const contract = new web3.eth.Contract(MultiValidatorABI.abi, multiValidatorContractAddress);
+                await contract.methods
+                    .voteToApprove(generatorAddress, credits)
+                    .send({ from: validatorAddress});
+                
+                    alert("CCT Approved");
+                    setAddressGen("");
+                    setNDVI("");
+                    setCoords("");
+                    setSequestrationAmount("");
+                    setStatus("not verified");
+            } catch (error) {
+                console.error("Error approving evidence:", error);
+            }
+        }else{
+            alert("Cannot Approve CCT")
         }
     };
     
