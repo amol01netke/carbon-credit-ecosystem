@@ -18,12 +18,10 @@
     "web3": "^4.13.0"
   },
   "scripts": {
-    "start-generator": "cross-env PORT=3000 react-scripts start",
-    "start-generator-2": "cross-env PORT=3004 react-scripts start",
-    "start-consumer": "cross-env PORT=3001 react-scripts start",
-    "start-consumer-2": "cross-env PORT=3005 react-scripts start",
-    "start-validator": "cross-env PORT=3002 react-scripts start",
-    "start-validator-2": "cross-env PORT=3003 react-scripts start",
+    "start-generator": "cross-env PORT=3000 REACT_APP_TITLE='Generator' react-scripts start",
+    "start-consumer": "cross-env PORT=3001 REACT_APP_TITLE='Consumer' react-scripts start",
+    "start-validator": "cross-env PORT=3002 REACT_APP_TITLE='Validator' react-scripts start",
+    "start-validator-2": "cross-env PORT=3003 REACT_APP_TITLE='Validator' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

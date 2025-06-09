@@ -160,6 +160,12 @@
     background-color: #ccc;
 }
 
+.approve-reject{
+    display:flex;
+    justify-content: center;
+    grid-gap: 1em;
+}
+
 @media screen and (max-width:600px) {
     .map-container{
         width: 90vw;

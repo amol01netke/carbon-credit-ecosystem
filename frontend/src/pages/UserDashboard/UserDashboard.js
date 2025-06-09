@@ -47,13 +47,13 @@ const SelectRegion = ({ setBounds }) => {
 };
 
 
-const generatorAddress="0x8cff038760fcDd4e8FA08d3FE0e3e12beD24F8E0";
-const consumerAddress="0xaD5f9d3d09b02B66EB4C8c15d5c1a3C3ef1E18Fe";
+const generatorAddress="0x3203c58ED078946344FA963b07821466D0dCd6d8";
+const consumerAddress="0x4fc5C35ED39eBb3d4756C63f0cEf5d4dFA0bad2A";
 
-const mintTokensContractAddress="0x36F1364566515DAe9C192Abba69da886FB34BeA4";
-const nftContractAddress="0xc67DC44399184026A5bb91Ab9eB04d5B1dA128b6";
-const multiValidatorContractAddress="0xE9b06955d04B2203331eF478AF71a6fFF392aFfF";
-const ammContractAddress="0x16Ae1B0aC4f5D9e631289F0a2EF782054da51a2D";
+const mintTokensContractAddress="0x54051A54A0d358735a54353A03E50Cbe17056e3c";
+const nftContractAddress="0x8b7cE17B7EA3D323765848C2927bd7BBDBD9FA36";
+const multiValidatorContractAddress="0xCdb43660A3dBfF6e14ea5A61CD8E83aAd953b3Bc";
+const ammContractAddress="0xc53B387FB1e713e4A1dfBD56C4bCC5F3e8e80030";
 
 const GeneratorDashboard=(props)=>{
     const [web3,setWeb3]=useState(null);
@@ -491,6 +491,14 @@ const ValidatorDashboard=(props)=>{
         }
     };
     
+    const rejectEvidence=async()=>{
+        alert("Request Rejected");
+        setAddressGen("");
+        setNDVI("");
+        setCoords("");
+        setSequestrationAmount("");
+        setStatus("not verified");
+    }
     //logout
     const handleLogout=()=>{
         props.setIsLoggedIn(false);
@@ -608,7 +616,10 @@ const ValidatorDashboard=(props)=>{
                         <p>Sequestration amount : {sequestrationAmount} tons</p>
                         
                         <br/>
-                        <button className="fun-btn" onClick={approveEvidence}>Approve CCT</button>
+                        <div class="approve-reject">
+                            <button className="fun-btn" onClick={approveEvidence}>Approve CCT</button>
+                            <button className="fun-btn" onClick={rejectEvidence}>Reject</button>
+                        </div>
                     </div>
 
                     <div className="con-section">
@@ -651,11 +662,9 @@ const UserDashboard=(props)=>{
 
     return (
     <React.Fragment>
-        <Header/>
-            <div className="user-dashboard">
-                <Component setIsLoggedIn={setIsLoggedIn}/>
-            </div>
-        <Footer/>
+        <div className="user-dashboard">
+            <Component setIsLoggedIn={setIsLoggedIn}/>
+        </div>
     </React.Fragment>
     );
 }

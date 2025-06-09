@@ -79,10 +79,4 @@ contract AMM{
         uint256 totalETH=(scaledBuyAmount * listing.pricePerCCT)/CCT_DECIMALS;
         payable(listing.seller).transfer(totalETH);
     }
-
-    //retire tokens
-    // function burnTokens(uint256 _amount) public{
-    //     uint256 scaledAmount = _amount * CCT_DECIMALS;
-    //     mintContract.burnFrom(msg.sender,scaledAmount);
-    // }
 }

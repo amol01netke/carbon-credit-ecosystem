@@ -31,8 +31,8 @@ CORS(app)
 
 #     return jsonify({"ndvi": round(mean_ndvi, 4)})
 
-SENTINEL_CLIENT_ID = "5e7e03a3-b600-4bcc-acbb-45ec190c64f4"
-SENTINEL_CLIENT_SECRET = "i2VhNI7uokGfDXhubyYNZsEkXv2qBtGy"
+SENTINEL_CLIENT_ID = "ab6918b7-5190-4f76-aff6-fed2bbf701b4"
+SENTINEL_CLIENT_SECRET = "9EZFJ9YyIrliLPS9jTGOa4Fx6ufJmI9h"
 SENTINEL_BASE_URL = "https://services.sentinel-hub.com/oauth/token"
 
 def get_sentinel_access_token():
